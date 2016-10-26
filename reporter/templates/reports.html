@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+ 
+ 
+<!-- Template Specific Stylesheets -->
+{% block extrastyle %}
+<style>
+.dropzone {
+    margin-top: 18px;
+    min-height: 40px;
+    padding: 16px;
+}
+</style>
+{% endblock extrastyle %} 
+
+
+<!-- Template Specific Javascript -->
+{% block extrajs %}
+<script src="{% static 'dropzone/dist/min/dropzone.min.js' %}"></script>
+<script type="text/javascript">
+    /*global Dropzone*/
+    Dropzone.options.dropzoneForm = {
+        uploadMultiple: false,
+        autoProcessQueue: true,
+        dictDefaultMessage: 'Drop new failure reports here to upload',
+        addRemoveLinks: null,
+        dictCancelUpload: '',
+        dictCancelUploadConfirmation: '',
+        dictRemoveFile: '',
+        init : function() {
+            this.on("success", function() {
+                location.reload();
+            });
+        }
+    };
+</script>
+{% endblock extrajs %}
+
+
+<!-- Content -->
+{% block content %}
+<div class="row wrapper border-bottom white-bg page-heading">
+    <div class="col-lg-8">
+        <h2>Failure Reports</h2>
+        <ol class="breadcrumb">
+            <li>
+                <a href="index.html">Home</a>
+            </li>
+            <li class="active">
+                <strong>Failure Reports</strong>
+            </li>
+        </ol>
+    </div>
+    <div class="col-lg-4">
+        <form action="/failure-reports/" class="dropzone" id="dropzoneForm" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="fallback">
+                <input name="file" type="file" multiple />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="wrapper wrapper-content animated fadeInRight">
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="ibox float-e-margins">
+                <div class="ibox-content">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>VIN</th>
+                                    <th>Vehicle</th>
+                                    <th>Captured on</th>
+                                    <th>DTC Count</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for report in reports %}
+                                <tr class="odd gradeX">
+                                    <td><a href="{% url 'failure-report' id=report.pk %}">{{report.pk}}</a></td>
+                                    <td>{{report.vehicle.vin}}</td>
+                                    <td>{{report.vehicle.model}}</td>
+                                    <td>{{report.captured_on}}</td>
+                                    <td>{{report.dtc_count}}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}

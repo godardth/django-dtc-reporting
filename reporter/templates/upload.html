@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+ 
+{% block content %}
+<div class="row wrapper border-bottom white-bg page-heading">
+    <div class="col-lg-10">
+        <h2>Failure Report Upload</h2>
+        <ol class="breadcrumb">
+            <li>
+                <a href="{% url 'index' %}">Home</a>
+            </li>
+            <li class="active">
+                <a href="{% url 'failure-reports' %}">Failure Reports</a>
+            </li>
+            <li class="active">
+                <strong>Failure Report Upload</strong>
+            </li>
+        </ol>
+    </div>
+    <div class="col-lg-2"></div>
+</div>
+
+<div class="wrapper wrapper-content animated fadeInRight">
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="ibox">
+                <div class="ibox-title">
+                    <h5>Upload Failure Files</h5>
+                </div>
+                <div class="ibox-content">
+                    <form action="#" class="dropzone" id="dropzoneForm">
+                        <div class="fallback">
+                            <input name="file" type="file" multiple />
+                        </div>
+                    </form>
+                </div>   
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}

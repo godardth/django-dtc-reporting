@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% load integers %}
+ 
+{% block content %}
+<div class="row wrapper border-bottom white-bg page-heading">
+    <div class="col-lg-10">
+        <h2>Diagnostic Trouble Codes</h2>
+        <ol class="breadcrumb">
+            <li>
+                <a href="index.html">Home</a>
+            </li>
+            <li class="active">
+                <strong>Diagnostic Trouble Codes</strong>
+            </li>
+        </ol>
+    </div>
+    <div class="col-lg-2"></div>
+</div>
+
+<div class="wrapper wrapper-content animated fadeInRight">
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="ibox float-e-margins">
+                <div class="ibox-content">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>ID (hex)</th>
+                                    <th>Device Id</th>
+                                    <th>Failure Type</th>
+                                </tr>
+                            </thead>
+                            <tbody class="text-uppercase">
+                                {% for dtc in dtcs %}
+                                <tr>
+                                    <td>{{dtc.device_identifier.value|hexadecimal}}{{dtc.failure_type.value|hexadecimal}}</td>
+                                    <td>{{dtc.device_identifier.value|hexadecimal}}</td>
+                                    <td>{{dtc.failure_type.value|hexadecimal}}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}

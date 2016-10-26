@@ -1,0 +1,161 @@
+{% extends "base.html" %}
+{% load static %}
+{% load integers %}
+{% load extra_dtc_data %}
+
+{% block extrastyle %}
+<style>
+.file-download {
+    position: relative;
+    top: 28px;
+}
+</style>
+{% endblock extrastyle %}
+
+{% block content %}
+<div class="row wrapper border-bottom white-bg page-heading">
+    <div class="col-lg-10">
+        <h2>{{report.vehicle}} - {{report.captured_on|date}} - {{report.captured_on|time}}</h2>
+        <ol class="breadcrumb">
+            <li>
+                <a href="{% url 'index' %}">Home</a>
+            </li>
+            <li class="active">
+                <a href="{% url 'failure-reports' %}">Failure Reports</a>
+            </li>
+            <li class="active">
+                <strong>{{report.vehicle}} - {{report.captured_on|date}} - {{report.captured_on|time}}</strong>
+            </li>
+        </ol>
+    </div>
+    <div class="col-lg-2 file-download text-right">
+        <a href="{% get_media_prefix %}/{{report.file}}" target="_blank" class="btn btn-success">
+            <i class="fa fa-cloud-download"></i>&nbsp;&nbsp;<span class="bold">Original File</span>
+        </a>
+    </div>
+</div>
+
+<div class="wrapper wrapper-content animated fadeInRight">
+    <div class="row">
+        <div class="col-lg-4">
+            <div class="ibox float-e-margins">
+                <div class="ibox-title">
+                    <h5>Overview</h5>
+                </div>
+                <div class="ibox-content">
+                    <div class="table-responsive">
+                        {% for ecusnap in report.ecusnapshot_set.all %}
+                        <table class="table">
+                            <thead>
+                                <tr><th colspan="3">{% if ecusnap.ecu.acronym %}{{ecusnap.ecu.acronym}} - {% endif %}{{ecusnap.ecu.name}}</th></tr>
+                            </thead>
+                            <tbody class="text-uppercase">
+                                {% for dtcsnap in ecusnap.dtcsnapshot_set.all %}
+                                <tr id="dtcsnaphot-{{dtcsnap.pk}}" class="dtcsnapshot-summary-line">
+                                    <td>{{dtcsnap.device_identifier.text}}</td>
+                                    <td align="right">{{dtcsnap.device_identifier.value|hexadecimal}} {{dtcsnap.failure_type.value|hexadecimal}}</td>
+                                    <td align="right">
+                                        <input type="checkbox" id="dtcsnaphot-{{dtcsnap.pk}}-display" class="dtcsnaphot-checkbox" value="{{dtcsnap.pk}}">
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-8">
+            <div class="ibox float-e-margins">
+                <div class="ibox-title">
+                    <h5>Details</h5>
+                </div>
+                <div class="ibox-content">
+                    <div class="table-responsive">
+                        <table class="table dtcsnapshot-details" id="dtcsnaphot-details"></table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}
+
+{% block extrajs %}
+<script>
+    /*global $*/
+    
+    var snapshot_dataset = {}
+    {% for ecusnap in report.ecusnapshot_set.all %}
+    {% for dtcsnap in ecusnap.dtcsnapshot_set.all %}
+    snapshot_dataset[{{ dtcsnap.pk }}] = "{{ dtcsnap.snapshot_data|escapejs }}";
+    {% endfor %}
+    {% endfor %}
+    
+    $(document).ready(function() {
+        
+        // DTC Comparison Set Change
+        $('.dtcsnapshot-summary-line').on('click', function(obj){
+            // Build the list of DTC to be compared
+            var dtcsnaps = [];
+            $('.dtcsnaphot-checkbox').each(function(){
+                if( $(this).is(':checked') ){
+                    var dtc = {
+                        pk: $(this).val(),
+                        name: $(this).parent().prev().prev().html()
+                    }
+                    dtcsnaps.push(dtc);
+                }
+            });
+            // Build Data Lines
+            var data_names = [];
+            for(var i=0; i<dtcsnaps.length; i++) {
+                snap = $.parseJSON(snapshot_dataset[dtcsnaps[i].pk]);
+                for(var i=0; i<snap.data.length; i++) {
+                    if(data_names.indexOf(snap.data[i].text) < 0) {
+                        data_names.push(snap.data[i].text)
+                    }
+                }
+            }
+            // Build Table Data
+            var lines = [];
+            for(var i=0; i<data_names.length; i++) {
+                var cells = [data_names[i]];
+                for(var j=0; j<dtcsnaps.length; j++) {
+                    var found = false;
+                    snap = $.parseJSON(snapshot_dataset[dtcsnaps[j].pk]);
+                    for(var k=0; k<snap.data.length; k++) {
+                        if(snap.data[k].text == data_names[i]) {
+                            found = true;
+                            cells.push(snap.data[k].value);
+                        }
+                    }
+                    if(!found) {
+                        cells.push('N/A');
+                    }
+                }
+                lines.push(cells);
+            }
+            // Redraw table content
+            content = '<thead><tr><th>Parameters</th>';
+            for(var i=0; i<dtcsnaps.length; i++) {
+                content += '<th style="text-align: right">' + dtcsnaps[i].name + '</th>';
+            }
+            content += '</tr></thead><tbody>';
+            for(var i=0; i<lines.length; i++) {
+                content += '<tr>';
+                for(var j=0; j<lines[i].length; j++) {
+                    content += (j==0)?'<td>':'<td style="text-align: right">';
+                    content += lines[i][j] + '</td>';
+                }
+                content += '</tr>';
+            }
+            content += '</tbody>';
+            $('#dtcsnaphot-details').html(content);
+
+        });
+        
+    });
+</script>
+{% endblock extrajs %}

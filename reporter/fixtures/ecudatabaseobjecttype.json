@@ -1,0 +1,583 @@
+[
+{
+    "model": "reporter.udsdatabaseobjecttype",
+    "pk": 1,
+    "fields": {
+        "name": "USM_Parameters.IgnitionSupplyConfirmation"
+    }
+},
+{
+    "model": "reporter.udsdatabaseobjecttype",
+    "pk": 2,
+    "fields": {
+        "name": "USM_Parameters.NeutralContact"
+    }
+},
+{
+    "model": "reporter.udsdatabaseobjecttype",
+    "pk": 3,
+    "fields": {
+        "name": "USM_Parameters.RearGearEngaged"
+    }
+},
+{
+    "model": "reporter.udsdatabaseobjecttype",
+    "pk": 4,
+    "fields": {
+        "name": "Studies_CAN_Frames"
+    }
+},
+{
+    "model": "reporter.udsdatabaseobjecttype",
+    "pk": 5,
+    "fields": {
+        "name": "TakeOffInhibitionWarning"
+    }
+},
+{
+    "model": "reporter.udsdatabaseobjecttype",
+    "pk": 6,
+    "fields": {
+        "name": "TRWFaultID"
+    }
+},
+{
+    "model": "reporter.udsdatabaseobjecttype",
+    "pk": 7,
+    "fields": {
+        "name": "VehicleActivationState"
+    }
+},
+{
+    "model": "reporter.udsdatabaseobjecttype",
+    "pk": 8,
+    "fields": {
+        "name": "TakeOffInhibition_Warning"
+    }
+},
+{
+    "model": "reporter.udsdatabaseobjecttype",
+    "pk": 9,
+    "fields": {
+        "name": "RoutineControlType"
+    }
+},
+{
+    "model": "reporter.udsdatabaseobjecttype",
+    "pk": 10,
+    "fields": {
+        "name": "RoutineStatusRecord.RoutineInfo"
+    }
+},
+{
+    "model": "reporter.udsdatabaseobjecttype",
+    "pk": 11,
+    "fields": {
+        "name": "IOCTL.StatusRecord.Parameter"
+    }
+},
+{
+    "model": "reporter.udsdatabaseobjecttype",
+    "pk": 12,
+    "fields": {
+        "name": "RoutineIdentifierList"
+    }
+},
+{
+    "model": "reporter.udsdatabaseobjecttype",
+    "pk": 13,
+    "fields": {
+        "name": "OutputPermanentControlList"
+    }
+},
+{
+    "model": "reporter.udsdatabaseobjecttype",
+    "pk": 14,
+    "fields": {
+        "name": "OutputControlCommand"
+    }
+},
+{
+    "model": "reporter.udsdatabaseobjecttype",
+    "pk": 15,
+    "fields": {
+        "name": "ECM_Parameters.EngineStatus"
+    }
+},
+{
+    "model": "reporter.udsdatabaseobjecttype",
+    "pk": 16,
+    "fields": {
+        "name": "ECM_Parameters.StopAutoPhase"
+    }
+},
+{
+    "model": "reporter.udsdatabaseobjecttype",
+    "pk": 17,
+    "fields": {
+        "name": "FactoryMode"
+    }
+},
+{
+    "model": "reporter.udsdatabaseobjecttype",
+    "pk": 18,
+    "fields": {
+        "name": "RAMDownload"
+    }
+},
+{
+    "model": "reporter.udsdatabaseobjecttype",
+    "pk": 19,
+    "fields": {
+        "name": "FailureLevel"
+    }
+},
+{
+    "model": "reporter.udsdatabaseobjecttype",
+    "pk": 20,
+    "fields": {
+        "name": "ParkingBrakeBindingStatusDisplay"
+    }
+},
+{
+    "model": "reporter.udsdatabaseobjecttype",
+    "pk": 21,
+    "fields": {
+        "name": "ParkingBrakeMalfunctionDisplay"
+    }
+},
+{
+    "model": "reporter.udsdatabaseobjecttype",
+    "pk": 22,
+    "fields": {
+        "name": "NotImmobilizedVehicleWarning"
+    }
+},
+{
+    "model": "reporter.udsdatabaseobjecttype",
+    "pk": 23,
+    "fields": {
+        "name": "DynamicBrakingDisplay"
+    }
+},
+{
+    "model": "reporter.udsdatabaseobjecttype",
+    "pk": 24,
+    "fields": {
+        "name": "IgnitionSupplyConfirmation"
+    }
+},
+{
+    "model": "reporter.udsdatabaseobjecttype",
+    "pk": 25,
+    "fields": {
+        "name": "EngineStatus"
+    }
+},
+{
+    "model": "reporter.udsdatabaseobjecttype",
+    "pk": 26,
+    "fields": {
+        "name": "GADE"
+    }
+},
+{
+    "model": "reporter.udsdatabaseobjecttype",
+    "pk": 27,
+    "fields": {
+        "name": "LastBrakeOperationLeft"
+    }
+},
+{
+    "model": "reporter.udsdatabaseobjecttype",
+    "pk": 28,
+    "fields": {
+        "name": "LeftBrakeState"
+    }
+},
+{
+    "model": "reporter.udsdatabaseobjecttype",
+    "pk": 29,
+    "fields": {
+        "name": "RightBrakeState"
+    }
+},
+{
+    "model": "reporter.udsdatabaseobjecttype",
+    "pk": 30,
+    "fields": {
+        "name": "LastBrakeOperationRight"
+    }
+},
+{
+    "model": "reporter.udsdatabaseobjecttype",
+    "pk": 31,
+    "fields": {
+        "name": "ParkingBrakeBindingStatus_Display"
+    }
+},
+{
+    "model": "reporter.udsdatabaseobjecttype",
+    "pk": 32,
+    "fields": {
+        "name": "ParkingBrakeMalfunction_Display"
+    }
+},
+{
+    "model": "reporter.udsdatabaseobjecttype",
+    "pk": 33,
+    "fields": {
+        "name": "NotImmobilizedVehicle_Warning"
+    }
+},
+{
+    "model": "reporter.udsdatabaseobjecttype",
+    "pk": 34,
+    "fields": {
+        "name": "DynamicBraking_Display"
+    }
+},
+{
+    "model": "reporter.udsdatabaseobjecttype",
+    "pk": 35,
+    "fields": {
+        "name": "DTCStatus.testFailed"
+    }
+},
+{
+    "model": "reporter.udsdatabaseobjecttype",
+    "pk": 36,
+    "fields": {
+        "name": "DTCStatus.testFailedThisMonitoringCycle"
+    }
+},
+{
+    "model": "reporter.udsdatabaseobjecttype",
+    "pk": 37,
+    "fields": {
+        "name": "DTCStatus.pendingDTC"
+    }
+},
+{
+    "model": "reporter.udsdatabaseobjecttype",
+    "pk": 38,
+    "fields": {
+        "name": "DTCStatus.confirmedDTC"
+    }
+},
+{
+    "model": "reporter.udsdatabaseobjecttype",
+    "pk": 39,
+    "fields": {
+        "name": "DTCStatus.testNotCompletedSinceLastClear"
+    }
+},
+{
+    "model": "reporter.udsdatabaseobjecttype",
+    "pk": 40,
+    "fields": {
+        "name": "DTCStatus.testFailedSinceLastClear"
+    }
+},
+{
+    "model": "reporter.udsdatabaseobjecttype",
+    "pk": 41,
+    "fields": {
+        "name": "DTCStatus.testNotCompletedThisMonitoringCycle"
+    }
+},
+{
+    "model": "reporter.udsdatabaseobjecttype",
+    "pk": 42,
+    "fields": {
+        "name": "DTCStatus.warningIndicatorRequested"
+    }
+},
+{
+    "model": "reporter.udsdatabaseobjecttype",
+    "pk": 43,
+    "fields": {
+        "name": "DTCFailureType.Category"
+    }
+},
+{
+    "model": "reporter.udsdatabaseobjecttype",
+    "pk": 44,
+    "fields": {
+        "name": "DTCFailureType"
+    }
+},
+{
+    "model": "reporter.udsdatabaseobjecttype",
+    "pk": 45,
+    "fields": {
+        "name": "DTCDeviceIdentifier"
+    }
+},
+{
+    "model": "reporter.udsdatabaseobjecttype",
+    "pk": 46,
+    "fields": {
+        "name": "DTCFormatIdentifier"
+    }
+},
+{
+    "model": "reporter.udsdatabaseobjecttype",
+    "pk": 47,
+    "fields": {
+        "name": "DTCExtendedDataRecordNumber"
+    }
+},
+{
+    "model": "reporter.udsdatabaseobjecttype",
+    "pk": 48,
+    "fields": {
+        "name": "ABS_Parameters.ABSinRegulation"
+    }
+},
+{
+    "model": "reporter.udsdatabaseobjecttype",
+    "pk": 49,
+    "fields": {
+        "name": "BCM_Parameters.BCM_WakeUpSleepCommand"
+    }
+},
+{
+    "model": "reporter.udsdatabaseobjecttype",
+    "pk": 50,
+    "fields": {
+        "name": "BCM_Parameters.DriverSeatStatus"
+    }
+},
+{
+    "model": "reporter.udsdatabaseobjecttype",
+    "pk": 51,
+    "fields": {
+        "name": "BCM_Parameters.WakeUpType"
+    }
+},
+{
+    "model": "reporter.udsdatabaseobjecttype",
+    "pk": 52,
+    "fields": {
+        "name": "BCM_Parameters.VehicleActivationState"
+    }
+},
+{
+    "model": "reporter.udsdatabaseobjecttype",
+    "pk": 53,
+    "fields": {
+        "name": "BCM_Parameters.EngineStopDriverRequested"
+    }
+},
+{
+    "model": "reporter.udsdatabaseobjecttype",
+    "pk": 54,
+    "fields": {
+        "name": "BCM_Parameters.BrakeInfoStatus"
+    }
+},
+{
+    "model": "reporter.udsdatabaseobjecttype",
+    "pk": 55,
+    "fields": {
+        "name": "BCM_Parameters.GenericApplicativeDiagEnable"
+    }
+},
+{
+    "model": "reporter.udsdatabaseobjecttype",
+    "pk": 56,
+    "fields": {
+        "name": "BCM_Parameters.DriverDoorState"
+    }
+},
+{
+    "model": "reporter.udsdatabaseobjecttype",
+    "pk": 57,
+    "fields": {
+        "name": "BCM_Parameters.PassengerDoorState"
+    }
+},
+{
+    "model": "reporter.udsdatabaseobjecttype",
+    "pk": 58,
+    "fields": {
+        "name": "AT_Parameters.TransmRangeEngaged_Target"
+    }
+},
+{
+    "model": "reporter.udsdatabaseobjecttype",
+    "pk": 59,
+    "fields": {
+        "name": "AT_Parameters.GearLeverPosition"
+    }
+},
+{
+    "model": "reporter.udsdatabaseobjecttype",
+    "pk": 60,
+    "fields": {
+        "name": "Airbag_Parameters.DriverSafetyBeltReminder"
+    }
+},
+{
+    "model": "reporter.udsdatabaseobjecttype",
+    "pk": 61,
+    "fields": {
+        "name": "CheckSum_Parameters"
+    }
+},
+{
+    "model": "reporter.udsdatabaseobjecttype",
+    "pk": 62,
+    "fields": {
+        "name": "APB_ConfigurationMode.GearBoxType"
+    }
+},
+{
+    "model": "reporter.udsdatabaseobjecttype",
+    "pk": 63,
+    "fields": {
+        "name": "APB_ConfigurationMode.ColdCountryMode"
+    }
+},
+{
+    "model": "reporter.udsdatabaseobjecttype",
+    "pk": 64,
+    "fields": {
+        "name": "APB_ConfigurationMode.StopAndStartMode"
+    }
+},
+{
+    "model": "reporter.udsdatabaseobjecttype",
+    "pk": 65,
+    "fields": {
+        "name": "APB SwitchState"
+    }
+},
+{
+    "model": "reporter.udsdatabaseobjecttype",
+    "pk": 66,
+    "fields": {
+        "name": "BrakeStatusLeft"
+    }
+},
+{
+    "model": "reporter.udsdatabaseobjecttype",
+    "pk": 67,
+    "fields": {
+        "name": "BrakeStatusRight"
+    }
+},
+{
+    "model": "reporter.udsdatabaseobjecttype",
+    "pk": 68,
+    "fields": {
+        "name": "APBNotTightenedWarning"
+    }
+},
+{
+    "model": "reporter.udsdatabaseobjecttype",
+    "pk": 69,
+    "fields": {
+        "name": "APB_BrakePedalDisplay"
+    }
+},
+{
+    "model": "reporter.udsdatabaseobjecttype",
+    "pk": 70,
+    "fields": {
+        "name": "APB_LED_State"
+    }
+},
+{
+    "model": "reporter.udsdatabaseobjecttype",
+    "pk": 71,
+    "fields": {
+        "name": "BrakePedalInfoStatus"
+    }
+},
+{
+    "model": "reporter.udsdatabaseobjecttype",
+    "pk": 72,
+    "fields": {
+        "name": "APBNotTightened_Warning"
+    }
+},
+{
+    "model": "reporter.udsdatabaseobjecttype",
+    "pk": 73,
+    "fields": {
+        "name": "APBTightenedRequest_Unvailable"
+    }
+},
+{
+    "model": "reporter.udsdatabaseobjecttype",
+    "pk": 74,
+    "fields": {
+        "name": "APB_BrakePedalRequestDisplay"
+    }
+},
+{
+    "model": "reporter.udsdatabaseobjecttype",
+    "pk": 75,
+    "fields": {
+        "name": "APB_LED_Status"
+    }
+},
+{
+    "model": "reporter.udsdatabaseobjecttype",
+    "pk": 76,
+    "fields": {
+        "name": "BCM_Parameters.DriverStopRequestWhileBattOff"
+    }
+},
+{
+    "model": "reporter.udsdatabaseobjecttype",
+    "pk": 77,
+    "fields": {
+        "name": "DTC_Event_Status"
+    }
+},
+{
+    "model": "reporter.udsdatabaseobjecttype",
+    "pk": 78,
+    "fields": {
+        "name": "AT_Parameters.AT_ParkPositionCommandState"
+    }
+},
+{
+    "model": "reporter.udsdatabaseobjecttype",
+    "pk": 79,
+    "fields": {
+        "name": "APBTightenedRequestUnavailable"
+    }
+},
+{
+    "model": "reporter.udsdatabaseobjecttype",
+    "pk": 80,
+    "fields": {
+        "name": "APB_ConfigurationMode.SCUVehicleType"
+    }
+},
+{
+    "model": "reporter.udsdatabaseobjecttype",
+    "pk": 81,
+    "fields": {
+        "name": "APB_ConfigurationMode.TiltByESCMode"
+    }
+},
+{
+    "model": "reporter.udsdatabaseobjecttype",
+    "pk": 82,
+    "fields": {
+        "name": "APB_ConfigurationMode.DriverSeatSensorConf"
+    }
+},
+{
+    "model": "reporter.udsdatabaseobjecttype",
+    "pk": 83,
+    "fields": {
+        "name": "APB_ConfigurationMode.AxOrientation"
+    }
+}
+]

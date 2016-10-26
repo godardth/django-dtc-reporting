@@ -1,0 +1,103 @@
+{% load staticfiles %}
+
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    
+        <title>EDL Toolbox</title>
+    
+        <!-- Bower Dependencies -->
+        <link href="{% static 'bootstrap/dist/css/bootstrap.css' %}" rel="stylesheet">
+        <link href="{% static 'font-awesome/css/font-awesome.min.css' %}" rel="stylesheet">
+        <link href="{% static 'animate.css/animate.min.css' %}" rel="stylesheet">
+        
+        <!-- Manual Dependencies -->
+        <link href="{% static 'inspinia/inspinia.css' %}" rel="stylesheet">
+        
+        <!-- Template Specific Stylesheets -->
+        {% block extrastyle %}
+        {% endblock extrastyle %}
+    
+        {% block extrahead %}
+        {% endblock extrahead %}
+    </head>
+    
+    <body>
+        <div id="wrapper">
+            <nav class="navbar-default navbar-static-side" role="navigation">
+                <div class="sidebar-collapse">
+                    <ul class="nav metismenu" id="side-menu">
+                        <li class="nav-header">
+                            <div class="dropdown profile-element"> 
+                                <span><img alt="image" class="img-circle" src="{% static 'inspinia/img/profile_small.jpg' %}" /></span>
+                                <a href="#">
+                                    <span class="clear">
+                                        <span class="block m-t-xs"><strong class="font-bold">Theophile Godard</strong></span>
+                                        <span class="text-muted text-xs block">PDE</span>
+                                    </span>
+                                </a>
+                            </div>
+                            <div class="logo-element">IN+</div>
+                        </li>
+                        <li>
+                            <a href="{% url 'vehicles' %}"><i class="fa fa-car"></i> <span class="nav-label">Vehicles</span></a>
+                        </li>
+                        <li>
+                            <a href="{% url 'failure-reports' %}"><i class="fa fa-file-text"></i> <span class="nav-label">Failure Reports</span></a>
+                        </li>
+                        <li>
+                            <a href="{% url 'ecus' %}"><i class="fa fa-microchip"></i> <span class="nav-label">ECUs</span></a>
+                        </li>
+                        <li>
+                            <a href="{% url 'dtcs' %}"><i class="fa fa-exclamation-triangle"></i> <span class="nav-label">DTCs</span></a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+    
+            <div id="page-wrapper" class="gray-bg dashbard-1">
+                <div class="row border-bottom">
+                    <nav class="navbar navbar-static-top white-bg" role="navigation" style="margin-bottom: 0">
+                        <div class="navbar-header">
+                            <a class="navbar-minimalize minimalize-styl-2 btn btn-primary " href="#"><i class="fa fa-bars"></i></a>
+                            <form role="search" class="navbar-form-custom" action="search_results.html">
+                                <div class="form-group">
+                                    <input type="text" placeholder="Search for VIN, DTC..." class="form-control" name="top-search" id="top-search">
+                                </div>
+                            </form>
+                        </div>
+                        <ul class="nav navbar-top-links navbar-right">
+                            <li>
+                                <a href="login.html">
+                                    <i class="fa fa-sign-out"></i> Log out
+                                </a>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+            
+                {% block content %}
+                {% endblock content %}
+                
+            </div>
+        </div>
+    
+        <!-- Bower Dependencies -->
+        <script src="{% static 'jquery/dist/jquery.min.js' %}"></script>
+        <script src="{% static 'bootstrap/dist/js/bootstrap.min.js' %}"></script>
+        <script src="{% static 'metisMenu/dist/metisMenu.min.js' %}"></script>
+        <script src="{% static 'jquery-slimscroll/jquery.slimscroll.min.js' %}"></script>
+        <script src="{% static 'jquery-ui/jquery-ui.min.js' %}"></script>
+        
+        <!-- Manual Dependencies -->
+        <script src="{% static 'inspinia/inspinia.js' %}"></script>
+        
+        <!-- Template Specific Javascript -->
+        {% block extrajs %}
+        {% endblock extrajs %}
+        
+    </body>
+</html>
