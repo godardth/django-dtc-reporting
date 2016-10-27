@@ -92,14 +92,17 @@ class UdsDatabaseDefinitionEntry(models.Model):
 
 
 class UdsDatabaseValueEntry(models.Model):
-    parent = models.ForeignKey('reporter.DtcSnapshot', on_delete=models.CASCADE)
+    dtc_snapshot = models.ForeignKey('reporter.DtcSnapshot', on_delete=models.CASCADE)
     type = models.ForeignKey('reporter.UdsDatabaseObjectType', on_delete=models.PROTECT)
     value = models.FloatField(null=True, blank=True)
     
     class Meta:
         verbose_name = 'UDS Database Value Entry'
         verbose_name_plural = 'UDS Database Value Entries'
-        
+    
+    def __str__(self):
+        return str(self.type)
+    
     @property
     def text(self):
         try:
@@ -122,5 +125,5 @@ class EcuRequest(models.Model):
         verbose_name = 'ECU Request'
     
     def __str__(self):
-        return str(self.database.ecu) + ' - ' + str(self.name)
+        return str(self.name)
     

@@ -21,7 +21,7 @@ class VehicleSnapshot(models.Model):
         unique_together = ("vehicle", "captured_on")
     
     def __str__(self):
-        return str(self.vehicle) + ' - ' + str(self.captured_on)
+        return str(self.captured_on)
     
     @property
     def dtc_count(self):
@@ -80,17 +80,18 @@ class EcuSnapshot(models.Model):
         
     @receiver(pre_save, sender='reporter.EcuSnapshot')
     def parse_file(sender, instance, signal, **kwargs):
-        soup = BeautifulSoup(instance.raw, "html5lib")
-        instance.ecu, created = Ecu.objects.get_or_create(name=soup.select('.identification th.fctname')[0].find_all('font')[0].string)
-        data = soup.select('.identification > tbody > tr > td')
-        instance.part_reference = data[1].string
-        instance.diag_version = data[2].string
-        instance.supplier = data[3].string
-        instance.hardware_reference = data[4].string
-        instance.software_name = data[5].string
-        instance.software_reference = ''
-        instance.serial_number = data[11].string
-        instance.calibration_reference = data[12].string
+        if not instance.pk:
+            soup = BeautifulSoup(instance.raw, "html5lib")
+            instance.ecu, created = Ecu.objects.get_or_create(name=soup.select('.identification th.fctname')[0].find_all('font')[0].string)
+            data = soup.select('.identification > tbody > tr > td')
+            instance.part_reference = data[1].string
+            instance.diag_version = data[2].string
+            instance.supplier = data[3].string
+            instance.hardware_reference = data[4].string
+            instance.software_name = data[5].string
+            instance.software_reference = ''
+            instance.serial_number = data[11].string
+            instance.calibration_reference = data[12].string
     
     @receiver(post_save, sender='reporter.EcuSnapshot')
     def create_dtcsnapshot_snapshot(sender, instance, created, signal, **kwargs):    
@@ -117,7 +118,35 @@ class DtcSnapshot(models.Model):
         verbose_name = 'DTC Snapshot'
     
     def __str__(self):
-        return str(self.ecu_snapshot.vehicle_snapshot.vehicle.vin) + ' - ' + str(self.ecu_snapshot)
+        return '0x' + hex(int(self.device_identifier.value)).upper()[2:] + hex(int(self.failure_type.value)).upper()[2:]
+    
+    @property
+    def device_identifier(self):
+        type = UdsDatabaseObjectType.objects.get(name='DTCDeviceIdentifier')
+        return self.udsdatabasevalueentry_set.get(type=type)
+    
+    @property
+    def failure_type(self):
+        type = UdsDatabaseObjectType.objects.get(name='DTCFailureType')
+        return self.udsdatabasevalueentry_set.get(type=type)
+    
+    @property
+    def snapshot_data_db(self):
+        data_db = json.loads(self.snapshot_data)
+        ret = dict()
+        for k, data_list in data_db.iteritems():
+            ret[k] = []
+            for data_item in data_list:
+                # Request Name
+                try:
+                    import pudb;pu.db
+                    request_db = EcuRequest.objects.get(database=self.ecu_snapshot.uds_database, sent_bytes='220'+hex(data_item['request'])[2:]).name
+                except:
+                    request_db = data_item['request']
+                # Data Textual
+                value_db = data_item['value']
+                ret[k].append({'request': data_item['request'], 'request_db': request_db, 'value': data_item['value'], 'value_db': value_db})
+        return json.dumps(ret)
     
     @receiver(post_save, sender='reporter.DtcSnapshot')
     def create_dtcsnapshot_snapshot(sender, instance, created, signal, **kwargs):    
@@ -125,7 +154,7 @@ class DtcSnapshot(models.Model):
             soup = BeautifulSoup(instance.raw, "html5lib")
             summary_line_cells = soup.select('.DTCName > tbody > tr > td')
             UdsDatabaseValueEntry.objects.create(
-                parent=instance,
+                dtc_snapshot=instance,
                 type=UdsDatabaseObjectType.objects.get(name='DTCDeviceIdentifier'),
                 value=int(summary_line_cells[2].string[1:], 16)
             )
@@ -153,25 +182,34 @@ class DtcSnapshot(models.Model):
                 for key, value in data.iteritems():
                     try:
                         UdsDatabaseValueEntry.objects.create(
-                            parent=instance,
+                            dtc_snapshot=instance,
                             type=UdsDatabaseObjectType.objects.get(name=display2db[key]),
                             value=value
                         )
                     except KeyError:
                         pass
             # ... from body table
-            extradata_table = soup.select('.FreezeF')[0]
-            if extradata_table:
-                header_line = extradata_table.select('tr:nth-of-type(2) > th')[0].string
-                # Initialize the data object
-                extradata = {
-                    'record': header_line[header_line.index('Record : ')+9:header_line.index(' ?(')],
-                    'data': []
-                }
-                # Fill with the parsed data
-                for datablock in extradata_table.select('.FreezeF'):
-                    extradata['data'].append({
-                        'request': datablock.select('td')[1].string[1:],
-                        'value': datablock.select('td')[3].string
-                    })
-                instance.snapshot_data = json.dumps(extradata)
+            def extra_data_line(tag):
+                return tag.has_attr('class') and not tag.has_attr('id')
+                
+            extradata_table_lines = soup.select_one('.FreezeF > tbody').find_all('tr', recursive=False)
+            record = 0
+            extradata = dict()
+            for line in extradata_table_lines[1:]:
+                # If line contains a record number, update record number
+                try: 
+                    content = line.select('th')[0].string
+                    index = content.index('Record : ')
+                    record = content[index+9:content.index(' ?(')]
+                    extradata[record] = []
+                    continue
+                except:
+                    pass
+                # Line is a data line
+                datacells = line.select('.FreezeF td')
+                extradata[record].append({
+                    'request': int(datacells[1].string[1:], 16),
+                    'value': datacells[3].string
+                })
+            instance.snapshot_data = json.dumps(extradata)
+            instance.save()
