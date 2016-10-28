@@ -3,7 +3,7 @@ import json
 from django.db import models
 from django.db.models.signals import pre_save, post_save
 from django.dispatch import receiver
-from reporter.models import Vehicle, Ecu, EcuRequest, UdsDatabaseObjectType, UdsDatabase, UdsDatabaseValueEntry
+from reporter.models import Vehicle, Ecu, EcuRequest, UdsDatabaseObjectType, UdsDatabase, UdsDatabaseValueEntry, UdsDatabaseDefinitionEntry
 from bs4 import BeautifulSoup
 from django.utils.dateparse import parse_datetime
 
@@ -110,9 +110,21 @@ class DtcSnapshot(models.Model):
     # Related objects
     ecu_snapshot = models.ForeignKey('reporter.EcuSnapshot', on_delete=models.CASCADE)
     # Snapshot Data (DTC Level)
+    status_byte = models.PositiveSmallIntegerField(blank=True, null=True)
+    status_byte_availabilty_mask = models.PositiveSmallIntegerField(default=0)
     snapshot_data = models.TextField(blank=True, null=True)
     
     raw = None
+    status_mask = [
+        {'bit': 1, 'state': 'testFailed', 'text': 'B0_ DTCStatus.testFailed'},    
+        {'bit': 2, 'state': 'testFailedThisOperationCycle', 'text': ''}, 
+        {'bit': 4, 'state': 'pendingDTC', 'text': ''}, 
+        {'bit': 8, 'state': 'confirmedDTC', 'text': 'B3_ DTCStatus.confirmedDTC'}, 
+        {'bit': 16, 'state': 'testNotCompletedSinceLastClear', 'text': 'B4_ DTCStatus.testNotCompletedSinceLastClear'}, 
+        {'bit': 32, 'state': 'testFailedSinceLastClear', 'text': 'B5_ DTCStatus.testFailedSinceLastClear'}, 
+        {'bit': 64, 'state': 'testNotCompletedThisOperationCycle', 'text': 'B6_ DTCStatus.testNotCompletedThisMonitoringCycle'}, 
+        {'bit': 128, 'state': 'warningIndicatorRequested', 'text': 'B7_ DTCStatus.warningIndicatorRequested'}  
+    ]
     
     class Meta:
         verbose_name = 'DTC Snapshot'
@@ -131,6 +143,16 @@ class DtcSnapshot(models.Model):
         return self.udsdatabasevalueentry_set.get(type=type)
     
     @property
+    def dtc_status(self):
+        status = dict()
+        for mask_item in self.status_mask:
+            if (self.status_byte_availabilty_mask & mask_item['bit']) / mask_item['bit'] == 1:
+                status[mask_item['state']] = (self.status_byte & mask_item['bit']) / mask_item['bit']
+            else:
+                status[mask_item['state']] = None
+        return status
+    
+    @property
     def snapshot_data_db(self):
         data_db = json.loads(self.snapshot_data)
         ret = dict()
@@ -139,14 +161,36 @@ class DtcSnapshot(models.Model):
             for data_item in data_list:
                 # Request Name
                 try:
-                    import pudb;pu.db
-                    request_db = EcuRequest.objects.get(database=self.ecu_snapshot.uds_database, sent_bytes='220'+hex(data_item['request'])[2:]).name
+                    request_db = EcuRequest.objects.get(database=self.ecu_snapshot.uds_database, sent_bytes='220'+hex(data_item['request'])[2:]).received_data_name
                 except:
                     request_db = data_item['request']
                 # Data Textual
-                value_db = data_item['value']
+                try:
+                    value_db = UdsDatabaseDefinitionEntry.objects.get(database=self.ecu_snapshot.uds_database, value=data_item['value']).text + ' ('+data_item['value']+')'
+                except:
+                    value_db = data_item['value']
                 ret[k].append({'request': data_item['request'], 'request_db': request_db, 'value': data_item['value'], 'value_db': value_db})
         return json.dumps(ret)
+        
+    @receiver(pre_save, sender='reporter.DtcSnapshot')
+    def parse_status_byte(sender, instance, signal, **kwargs):
+        if not instance.pk:
+            soup = BeautifulSoup(instance.raw, "html5lib")
+            summary_line_cells = soup.select('.DTCName > tbody > tr > td')
+            summary_table = soup.select('.StatusDTC > tbody')[0]
+            if summary_table:
+                instance.status_byte = 0
+                instance.status_byte_availabilty_mask = 0
+                for line in summary_table.select('tr')[1:]:
+                    text = line.select('td:nth-of-type(1)')[0].string
+                    try:
+                        val = int(line.select('td:nth-of-type(2)')[0].string.split(' ', 1)[0])
+                    except ValueError:
+                        continue
+                    for mask_item in instance.status_mask:
+                        if mask_item['text'] == text:
+                            instance.status_byte += mask_item['bit'] * val
+                            instance.status_byte_availabilty_mask += mask_item['bit']
     
     @receiver(post_save, sender='reporter.DtcSnapshot')
     def create_dtcsnapshot_snapshot(sender, instance, created, signal, **kwargs):    
@@ -158,36 +202,6 @@ class DtcSnapshot(models.Model):
                 type=UdsDatabaseObjectType.objects.get(name='DTCDeviceIdentifier'),
                 value=int(summary_line_cells[2].string[1:], 16)
             )
-            summary_table = soup.select('.StatusDTC > tbody')[0]
-            if summary_table:
-                # Define dictionary displayed value to database object name
-                display2db = {
-                    'FailureType': 'DTCFailureType',
-                    'FailureTypeCategory' : 'DTCFailureType.Category',
-                    'B0_ DTCStatus.testFailed' : 'DTCStatus.testFailed',
-                    'B3_ DTCStatus.confirmedDTC' : 'DTCStatus.confirmedDTC',
-                    'B4_ DTCStatus.testNotCompletedSinceLastClear' : 'DTCStatus.testNotCompletedSinceLastClear',
-                    'B5_ DTCStatus.testFailedSinceLastClear' : 'DTCStatus.testFailedSinceLastClear',
-                    'B6_ DTCStatus.testNotCompletedThisMonitoringCycle' : 'DTCStatus.testNotCompletedThisMonitoringCycle',
-                    'B7_ DTCStatus.warningIndicatorRequested' : 'DTCStatus.warningIndicatorRequested'
-                }
-                # Extract raw data from table
-                data = dict()
-                for line in summary_table.select('tr')[1:]:
-                    try:
-                        data[line.select('td:nth-of-type(1)')[0].string] = line.select('td:nth-of-type(2)')[0].string[:line.select('td:nth-of-type(2)')[0].string.index(' ')]
-                    except:
-                        data[line.select('td:nth-of-type(1)')[0].string] = line.select('td:nth-of-type(2)')[0].string
-                # Write parsed values in the object properties
-                for key, value in data.iteritems():
-                    try:
-                        UdsDatabaseValueEntry.objects.create(
-                            dtc_snapshot=instance,
-                            type=UdsDatabaseObjectType.objects.get(name=display2db[key]),
-                            value=value
-                        )
-                    except KeyError:
-                        pass
             # ... from body table
             def extra_data_line(tag):
                 return tag.has_attr('class') and not tag.has_attr('id')
