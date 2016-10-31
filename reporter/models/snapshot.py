@@ -3,7 +3,7 @@ import json
 from django.db import models
 from django.db.models.signals import pre_save, post_save
 from django.dispatch import receiver
-from reporter.models import Vehicle, Ecu, EcuRequest, UdsDatabaseObjectType, UdsDatabase, UdsDatabaseValueEntry, UdsDatabaseDefinitionEntry
+from reporter.models import Vehicle, Ecu, EcuRequest, UdsDatabaseObjectType, UdsDatabase, UdsDatabaseValueEntry, UdsDatabaseDefinitionEntry, Dtc
 from bs4 import BeautifulSoup
 from django.utils.dateparse import parse_datetime
 
@@ -109,9 +109,10 @@ class EcuSnapshot(models.Model):
 class DtcSnapshot(models.Model):
     # Related objects
     ecu_snapshot = models.ForeignKey('reporter.EcuSnapshot', on_delete=models.CASCADE)
+    dtc = models.ForeignKey('reporter.Dtc', on_delete=models.PROTECT, blank=True, null=True)
     # Snapshot Data (DTC Level)
-    status_byte = models.PositiveSmallIntegerField(blank=True, null=True)
-    status_byte_availabilty_mask = models.PositiveSmallIntegerField(default=0)
+    status_byte = models.PositiveIntegerField(blank=True, null=True)
+    status_byte_availabilty_mask = models.PositiveIntegerField(default=0)
     snapshot_data = models.TextField(blank=True, null=True)
     
     raw = None
@@ -134,13 +135,11 @@ class DtcSnapshot(models.Model):
     
     @property
     def device_identifier(self):
-        type = UdsDatabaseObjectType.objects.get(name='DTCDeviceIdentifier')
-        return self.udsdatabasevalueentry_set.get(type=type)
+        return self.udsdatabasevalueentry_set.get(type__name='DTCDeviceIdentifier')
     
     @property
     def failure_type(self):
-        type = UdsDatabaseObjectType.objects.get(name='DTCFailureType')
-        return self.udsdatabasevalueentry_set.get(type=type)
+        return self.udsdatabasevalueentry_set.get(type__name='DTCFailureType')
     
     @property
     def dtc_status(self):
@@ -183,10 +182,12 @@ class DtcSnapshot(models.Model):
                 instance.status_byte_availabilty_mask = 0
                 for line in summary_table.select('tr')[1:]:
                     text = line.select('td:nth-of-type(1)')[0].string
+                    # In case format mismatch (unexpected space char)
                     try:
                         val = int(line.select('td:nth-of-type(2)')[0].string.split(' ', 1)[0])
                     except ValueError:
                         continue
+                    # Normal case (0 or 1 value)
                     for mask_item in instance.status_mask:
                         if mask_item['text'] == text:
                             instance.status_byte += mask_item['bit'] * val
@@ -197,15 +198,23 @@ class DtcSnapshot(models.Model):
         if created:
             soup = BeautifulSoup(instance.raw, "html5lib")
             summary_line_cells = soup.select('.DTCName > tbody > tr > td')
+            # Get the device identifier
             UdsDatabaseValueEntry.objects.create(
                 dtc_snapshot=instance,
                 type=UdsDatabaseObjectType.objects.get(name='DTCDeviceIdentifier'),
                 value=int(summary_line_cells[2].string[1:], 16)
             )
+            # Get the Failure Type
+            summary_table = soup.select('.StatusDTC > tbody')[0]
+            for line in summary_table.select('tr')[1:]:
+                text = line.select('td:nth-of-type(1)')[0].string
+                if text == 'FailureType':
+                    UdsDatabaseValueEntry.objects.create(
+                        dtc_snapshot=instance,
+                        type=UdsDatabaseObjectType.objects.get(name='DTCFailureType'),
+                        value=int(line.select('td:nth-of-type(2)')[0].string.split(' ', 1)[0])
+                    )
             # ... from body table
-            def extra_data_line(tag):
-                return tag.has_attr('class') and not tag.has_attr('id')
-                
             extradata_table_lines = soup.select_one('.FreezeF > tbody').find_all('tr', recursive=False)
             record = 0
             extradata = dict()
@@ -226,4 +235,10 @@ class DtcSnapshot(models.Model):
                     'value': datacells[3].string
                 })
             instance.snapshot_data = json.dumps(extradata)
+            # Create the DTC type if not found
+            instance.dtc, created = Dtc.objects.get_or_create(
+                ecu=instance.ecu_snapshot.ecu,
+                device_identifier=int(instance.udsdatabasevalueentry_set.get(type__name='DTCDeviceIdentifier').value),
+                failure_type=int(instance.udsdatabasevalueentry_set.get(type__name='DTCFailureType').value)
+            )
             instance.save()

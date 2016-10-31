@@ -1,7 +1,7 @@
-import dtc
-import ecu
-import report
-import vehicle
+from dtc import dtc, dtcs
+from ecu import ecu, ecus
+from report import failure_report, failure_reports
+from vehicle import vehicle, vehicles
 
 from django.shortcuts import render
 from reporter.models import VehicleSnapshot, Vehicle

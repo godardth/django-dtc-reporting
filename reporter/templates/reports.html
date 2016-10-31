@@ -74,17 +74,17 @@
                                     <th>VIN</th>
                                     <th>Vehicle</th>
                                     <th>Captured on</th>
-                                    <th>DTC Count</th>
+                                    <th style="text-align: right">DTC Count</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {% for report in reports %}
                                 <tr class="odd gradeX">
-                                    <td><a href="{% url 'failure-report' id=report.pk %}">{{report.pk}}</a></td>
+                                    <td><a href="{% url 'failure-report' id=report.pk %}">#{{report.pk}}</a></td>
                                     <td>{{report.vehicle.vin}}</td>
                                     <td>{{report.vehicle.model}}</td>
                                     <td>{{report.captured_on}}</td>
-                                    <td>{{report.dtc_count}}</td>
+                                    <td align="right">{{report.dtc_count}}</td>
                                 </tr>
                                 {% endfor %}
                             </tbody>

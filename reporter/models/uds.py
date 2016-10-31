@@ -26,17 +26,18 @@ class UdsDatabase(models.Model):
     def parse_file(sender, instance, signal, **kwargs):
         f = instance.file
         f.open()
-        db = BeautifulSoup(f.read().encode('utf-8','ignore'), "xml")
+        import pudb;pu.db
+        db = BeautifulSoup(f.read(), "xml")
         instance.ecu, created = Ecu.objects.get_or_create(name=db.find('Function')['Name'])
         instance.supplier = db.find('AutoIdent')['Supplier']
         instance.version = db.find('AutoIdent')['Version']
 
     @receiver(post_save, sender='reporter.UdsDatabase')
-    def create_ecu_snapshot(sender, instance, created, signal, **kwargs):    
+    def import_data(sender, instance, created, signal, **kwargs):    
         if created:
             f = instance.file
             f.open()
-            db = BeautifulSoup(f.read().encode('utf-8','ignore'), "xml")
+            db = BeautifulSoup(f.read(), "xml")
             # Data
             for db_item in db.find_all('Item'):
                 # Type
@@ -74,15 +75,15 @@ class UdsDatabaseObjectType(models.Model):
     name = models.CharField(max_length=255)
     
     class Meta:
-        verbose_name = 'UDS Database Entry Type'
+        verbose_name = 'UDS Database Object Type'
     
     def __str__(self):
         return str(self.name)
 
 
 class UdsDatabaseDefinitionEntry(models.Model):
-    database = models.ForeignKey('reporter.UdsDatabase', on_delete=models.PROTECT, blank=True, null=True)
-    type = models.ForeignKey('reporter.UdsDatabaseObjectType', on_delete=models.PROTECT)
+    database = models.ForeignKey('reporter.UdsDatabase', on_delete=models.CASCADE, blank=True, null=True)
+    type = models.ForeignKey('reporter.UdsDatabaseObjectType', on_delete=models.CASCADE)
     value = models.FloatField()
     text = models.CharField(max_length=255)
     
