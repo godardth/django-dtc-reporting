@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load static %}
 {% load staticfiles %}
  
  
@@ -9,6 +10,32 @@
     margin-top: 18px;
     min-height: 40px;
     padding: 16px;
+}
+.dz-preview {
+    border: 1px solid #F1F1F1;
+    margin-top: 7px;
+    height: 35px;
+    position:relative;
+}
+.dz-details {
+    position: relative;
+    margin-top: 7px;
+    margin-left: 10px;
+    margin-right: 10px;
+}
+.dz-filename {
+    font-weight: 600;
+}
+.dz-error-message, .dz-success-mark {
+    display: none;
+    position: absolute;
+    top: 0;
+    right: 0px;
+}
+.dz-loader {
+    position: absolute;
+    top: 0;
+    right: 0;
 }
 </style>
 {% endblock extrastyle %} 
@@ -22,14 +49,16 @@
     Dropzone.options.dropzoneForm = {
         uploadMultiple: false,
         autoProcessQueue: true,
-        dictDefaultMessage: 'Drop new failure reports here to upload',
-        addRemoveLinks: null,
-        dictCancelUpload: '',
-        dictCancelUploadConfirmation: '',
-        dictRemoveFile: '',
+        previewTemplate: document.getElementById('preview-template').innerHTML,
+        url: '/failure-reports/',
         init : function() {
-            this.on("success", function() {
-                location.reload();
+            this.on("success", function(file) {
+                file.previewElement.querySelector(".dz-success-mark").style.display = 'block';
+                file.previewElement.querySelector(".dz-loader").style.display = 'none';
+            });
+            this.on("error", function(file) {
+                file.previewElement.querySelector(".dz-error-message").style.display = 'block';
+                file.previewElement.querySelector(".dz-loader").style.display = 'none';
             });
         }
     };
@@ -39,8 +68,24 @@
 
 <!-- Content -->
 {% block content %}
+
+<!-- DropZone Upload Template -->
+<div id="preview-template" style="display: none;">
+    <div class="dz-preview dz-file-preview">
+        <div class="dz-details">
+            <div class="dz-filename"><span data-dz-name></span></div>
+            <div class="dz-error-message text-danger"><i class="fa fa-exclamation-triangle" aria-hidden="true"></i> <span data-dz-errormessage></span></div>
+            <div class="dz-success-mark text-success"><span><i class="fa fa-check-square" aria-hidden="true"></i></span></div>
+        </div>
+        <div class="dz-loader"><img src="{% get_media_prefix %}/static/resources/loader.gif"></img></div>
+        <div class="dz-progress" style="display: none"><span class="dz-upload" data-dz-uploadprogress></span></div>
+        <div class="dz-error-mark" style="display: none"><span>✘</span></div>
+    </div>
+</div>
+
+<!-- Main Content -->
 <div class="row wrapper border-bottom white-bg page-heading">
-    <div class="col-lg-8">
+    <div class="col-lg-6">
         <h2>Failure Reports</h2>
         <ol class="breadcrumb">
             <li>
@@ -51,7 +96,7 @@
             </li>
         </ol>
     </div>
-    <div class="col-lg-4">
+    <div class="col-lg-6">
         <form action="/failure-reports/" class="dropzone" id="dropzoneForm" enctype="multipart/form-data">
             {% csrf_token %}
             <div class="fallback">

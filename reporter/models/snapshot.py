@@ -6,6 +6,7 @@ from django.dispatch import receiver
 from reporter.models import Vehicle, Ecu, EcuRequest, UdsDatabaseObjectType, UdsDatabase, UdsDatabaseValueEntry, UdsDatabaseDefinitionEntry, Dtc
 from bs4 import BeautifulSoup
 from django.utils.dateparse import parse_datetime
+from django.core.exceptions import ValidationError
 
 
 class VehicleSnapshot(models.Model):
@@ -23,6 +24,19 @@ class VehicleSnapshot(models.Model):
     def __unicode__(self):
         return unicode(self.captured_on)
     
+    def save(self):
+        # Check that file doesn't exist, if it exist just silently abort the import
+        # Vehicle Snapshot Parameters Parsing
+        f = self.file
+        f.open()
+        soup = BeautifulSoup(f.read(), "html5lib")
+        captured_on = parse_datetime(soup.select('.tbComment td')[0].string)
+        vin = vin=soup.select('.identification th.fctname')[1].find_all('font')[0].string
+        if not VehicleSnapshot.objects.filter(captured_on=captured_on, vehicle__vin=vin).exists():
+            super(VehicleSnapshot, self).save()
+        else:
+            raise ValidationError('File already uploaded')
+    
     @property
     def dtc_count(self):
         count = 0
@@ -35,9 +49,10 @@ class VehicleSnapshot(models.Model):
         # Vehicle Snapshot Parameters Parsing
         f = instance.file
         f.open()
-        soup = BeautifulSoup(f.read().encode('utf-8','ignore'), "html5lib")
+        soup = BeautifulSoup(f.read(), "html5lib")
         instance.captured_on = parse_datetime(soup.select('.tbComment td')[0].string)
         instance.vehicle, created = Vehicle.objects.get_or_create(vin=soup.select('.identification th.fctname')[1].find_all('font')[0].string)
+        
         
     @receiver(post_save, sender='reporter.VehicleSnapshot')
     def create_ecu_snapshot(sender, instance, created, signal, **kwargs):    
@@ -45,7 +60,7 @@ class VehicleSnapshot(models.Model):
             # Vehicle Snapshot Parameters Parsing
             f = instance.file
             f.open()
-            soup = BeautifulSoup(f.read().encode('utf-8','ignore'), "html5lib")
+            soup = BeautifulSoup(f.read(), "html5lib")
             # ECU Snapshots
             for ecu_section in soup.select('.identification'):
                 ecu_snapshot = EcuSnapshot()
@@ -198,6 +213,7 @@ class DtcSnapshot(models.Model):
         if created:
             soup = BeautifulSoup(instance.raw, "html5lib")
             summary_line_cells = soup.select('.DTCName > tbody > tr > td')
+            summary_table = soup.select('.StatusDTC > tbody')[0]
             # Get the device identifier
             UdsDatabaseValueEntry.objects.create(
                 dtc_snapshot=instance,
@@ -205,7 +221,6 @@ class DtcSnapshot(models.Model):
                 value=int(summary_line_cells[2].string[1:], 16)
             )
             # Get the Failure Type
-            summary_table = soup.select('.StatusDTC > tbody')[0]
             for line in summary_table.select('tr')[1:]:
                 text = line.select('td:nth-of-type(1)')[0].string
                 if text == 'FailureType':
@@ -215,25 +230,26 @@ class DtcSnapshot(models.Model):
                         value=int(line.select('td:nth-of-type(2)')[0].string.split(' ', 1)[0])
                     )
             # ... from body table
-            extradata_table_lines = soup.select_one('.FreezeF > tbody').find_all('tr', recursive=False)
-            record = 0
             extradata = dict()
-            for line in extradata_table_lines[1:]:
-                # If line contains a record number, update record number
-                try: 
-                    content = line.select('th')[0].string
-                    index = content.index('Record : ')
-                    record = content[index+9:content.index(' ?(')]
-                    extradata[record] = []
-                    continue
-                except:
-                    pass
-                # Line is a data line
-                datacells = line.select('.FreezeF td')
-                extradata[record].append({
-                    'request': int(datacells[1].string[1:], 16),
-                    'value': datacells[3].string
-                })
+            if soup.select_one('.FreezeF > tbody'):
+                extradata_table_lines = soup.select_one('.FreezeF > tbody').find_all('tr', recursive=False)
+                record = 0
+                for line in extradata_table_lines[1:]:
+                    # If line contains a record number, update record number
+                    try: 
+                        content = line.select('th')[0].string
+                        index = content.index('Record : ')
+                        record = content[index+9:content.index(' ?(')]
+                        extradata[record] = []
+                        continue
+                    except:
+                        pass
+                    # Line is a data line
+                    datacells = line.select('.FreezeF td')
+                    extradata[record].append({
+                        'request': int(datacells[1].string[1:], 16),
+                        'value': datacells[3].string
+                    })
             instance.snapshot_data = json.dumps(extradata)
             # Create the DTC type if not found
             instance.dtc, created = Dtc.objects.get_or_create(
