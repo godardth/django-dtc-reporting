@@ -7,8 +7,8 @@ class VehicleModel(models.Model):
     model = models.CharField(max_length=25, null=True, blank=True)
     class Meta:
         pass
-    def __str__(self):
-        return str(self.brand) + ' ' + str(self.model)
+    def __unicode__(self):
+        return unicode(self.brand) + ' ' + unicode(self.model)
  
 
 class Vehicle(models.Model):
@@ -18,8 +18,8 @@ class Vehicle(models.Model):
     sale_date = models.DateTimeField(null=True, blank=True)
     class Meta:
         pass
-    def __str__(self):
-        return str(self.vin)
+    def __unicode__(self):
+        return unicode(self.vin)
         
     def _get_report_count(self):
         return self.vehiclesnapshot_set.count()
@@ -32,5 +32,5 @@ class Ecu(models.Model):
     class Meta:
         verbose_name = 'ECU'
         verbose_name_plural = 'ECU'
-    def __str__(self):
-        return str(self.name)
+    def __unicode__(self):
+        return unicode(self.name)

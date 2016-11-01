@@ -20,8 +20,8 @@ class VehicleSnapshot(models.Model):
         verbose_name = 'Vehicle Snapshot'
         unique_together = ("vehicle", "captured_on")
     
-    def __str__(self):
-        return str(self.captured_on)
+    def __unicode__(self):
+        return unicode(self.captured_on)
     
     @property
     def dtc_count(self):
@@ -50,7 +50,7 @@ class VehicleSnapshot(models.Model):
             for ecu_section in soup.select('.identification'):
                 ecu_snapshot = EcuSnapshot()
                 ecu_snapshot.vehicle_snapshot=instance
-                ecu_snapshot.raw=str(ecu_section)
+                ecu_snapshot.raw=unicode(ecu_section)
                 ecu_snapshot.save()
 
 
@@ -75,8 +75,8 @@ class EcuSnapshot(models.Model):
         verbose_name = 'ECU Snapshot'
         unique_together = ('vehicle_snapshot', 'ecu')
     
-    def __str__(self):
-        return str(self.ecu)
+    def __unicode__(self):
+        return unicode(self.ecu)
         
     @receiver(pre_save, sender='reporter.EcuSnapshot')
     def parse_file(sender, instance, signal, **kwargs):
@@ -102,7 +102,7 @@ class EcuSnapshot(models.Model):
             for dtc_section in dtc_snaphots_iter:
                 dtc_snapshot = DtcSnapshot()
                 dtc_snapshot.ecu_snapshot=instance
-                dtc_snapshot.raw=str(dtc_section) + str(next(dtc_snaphots_iter))
+                dtc_snapshot.raw=unicode(dtc_section) + unicode(next(dtc_snaphots_iter))
                 dtc_snapshot.save()
 
     
@@ -130,7 +130,7 @@ class DtcSnapshot(models.Model):
     class Meta:
         verbose_name = 'DTC Snapshot'
     
-    def __str__(self):
+    def __unicode__(self):
         return '0x' + hex(int(self.device_identifier.value)).upper()[2:] + hex(int(self.failure_type.value)).upper()[2:]
     
     @property

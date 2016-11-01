@@ -19,14 +19,13 @@ class UdsDatabase(models.Model):
         verbose_name = 'UDS Database'
         unique_together = ("ecu", "version")
     
-    def __str__(self):
-        return str(self.ecu) + ' - ' + str(self.version)
+    def __unicode__(self):
+        return unicode(self.ecu) + ' - ' + unicode(self.version)
     
     @receiver(pre_save, sender='reporter.UdsDatabase')
     def parse_file(sender, instance, signal, **kwargs):
         f = instance.file
         f.open()
-        import pudb;pu.db
         db = BeautifulSoup(f.read(), "xml")
         instance.ecu, created = Ecu.objects.get_or_create(name=db.find('Function')['Name'])
         instance.supplier = db.find('AutoIdent')['Supplier']
@@ -77,8 +76,8 @@ class UdsDatabaseObjectType(models.Model):
     class Meta:
         verbose_name = 'UDS Database Object Type'
     
-    def __str__(self):
-        return str(self.name)
+    def __unicode__(self):
+        return unicode(self.name)
 
 
 class UdsDatabaseDefinitionEntry(models.Model):
@@ -101,8 +100,8 @@ class UdsDatabaseValueEntry(models.Model):
         verbose_name = 'UDS Database Value Entry'
         verbose_name_plural = 'UDS Database Value Entries'
     
-    def __str__(self):
-        return str(self.type)
+    def __unicode__(self):
+        return unicode(self.type)
     
     @property
     def text(self):
@@ -125,6 +124,6 @@ class EcuRequest(models.Model):
     class Meta:
         verbose_name = 'ECU Request'
     
-    def __str__(self):
-        return str(self.name)
+    def __unicode__(self):
+        return unicode(self.name)
     

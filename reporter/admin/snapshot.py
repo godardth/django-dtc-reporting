@@ -24,7 +24,7 @@ admin.site.register(EcuSnapshot, EcuSnapshotAdmin)
 
 
 class DtcSnapshotAdmin(admin.ModelAdmin):
-    list_display = ('pk', 'date', 'vehicle', 'ecu', '__str__')
+    list_display = ('pk', 'date', 'vehicle', 'ecu', '__unicode__')
     search_fields = ['pk', 'date', 'vehicle', 'ecu',]
     # Vehicle
     def vehicle(self, obj):

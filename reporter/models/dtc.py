@@ -12,12 +12,12 @@ class Dtc(models.Model):
         unique_together = ("device_identifier", "failure_type")
         verbose_name = 'Diagnostic Trouble Code'
     
-    def __str__(self):
+    def __unicode__(self):
         return '0x' + hex(self.device_identifier).upper()[2:] + hex(self.failure_type).upper()[2:]
     
     @property 
     def name(self):
-        return self.__str__()
+        return self.__unicode__()
     
     @property
     def failure_report_count(self):
