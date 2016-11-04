@@ -26,11 +26,21 @@
 .dz-filename {
     font-weight: 600;
 }
-.dz-error-message, .dz-success-mark {
+.dz-error-message, .dz-success-mark, .dz-error-mark {
     display: none;
     position: absolute;
     top: 0;
+}
+.dz-error-message, .dz-success-mark {
+    right: 25px;
+}
+.dz-error-mark {
     right: 0px;
+    color: #888;
+    cursor: pointer;
+}
+.dz-error-mark:hover {
+    color: #222;
 }
 .dz-loader {
     position: absolute;
@@ -54,10 +64,12 @@
         init : function() {
             this.on("success", function(file) {
                 file.previewElement.querySelector(".dz-success-mark").style.display = 'block';
+                file.previewElement.querySelector(".dz-error-mark").style.display = 'block';
                 file.previewElement.querySelector(".dz-loader").style.display = 'none';
             });
             this.on("error", function(file) {
                 file.previewElement.querySelector(".dz-error-message").style.display = 'block';
+                file.previewElement.querySelector(".dz-error-mark").style.display = 'block';
                 file.previewElement.querySelector(".dz-loader").style.display = 'none';
             });
         }
@@ -76,10 +88,10 @@
             <div class="dz-filename"><span data-dz-name></span></div>
             <div class="dz-error-message text-danger"><i class="fa fa-exclamation-triangle" aria-hidden="true"></i> <span data-dz-errormessage></span></div>
             <div class="dz-success-mark text-success"><span><i class="fa fa-check-square" aria-hidden="true"></i></span></div>
+            <div data-dz-remove class="dz-error-mark" style="display: none"><i class="fa fa-times" aria-hidden="true"></i></div>
         </div>
         <div class="dz-loader"><img src="{% get_media_prefix %}/static/resources/loader.gif"></img></div>
         <div class="dz-progress" style="display: none"><span class="dz-upload" data-dz-uploadprogress></span></div>
-        <div class="dz-error-mark" style="display: none"><span>✘</span></div>
     </div>
 </div>
 
