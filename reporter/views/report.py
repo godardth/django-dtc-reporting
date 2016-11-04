@@ -15,8 +15,14 @@ def failure_reports(request):
                 new_snapshot = VehicleSnapshot(file = request.FILES['file'])
                 new_snapshot.save()
                 return JsonResponse({'success': '200'})
+            # Exception management
             except ValidationError as e:
-                return HttpResponseBadRequest('File already on server')
+                try:
+                    if e.error_dict.get('vin', None):
+                        return HttpResponseBadRequest(e.error_dict['vin'][0].message)
+                except:
+                    pass
+                return HttpResponseBadRequest(e.message)
             except IndexError:
                 return HttpResponseBadRequest('File invalid (index out of range)')
         else:
