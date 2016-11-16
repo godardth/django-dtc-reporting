@@ -7,6 +7,7 @@ from django.dispatch import receiver
 from bs4 import BeautifulSoup
 from django.utils.dateparse import parse_datetime
 from reporter.models import Ecu
+from unidecode import unidecode
 
 
 class UdsDatabase(models.Model):
@@ -14,6 +15,7 @@ class UdsDatabase(models.Model):
     ecu = models.ForeignKey('reporter.Ecu', on_delete=models.CASCADE, editable=False)
     version = models.CharField(max_length=255, editable=False)
     supplier = models.CharField(max_length=255, editable=False)
+    default = models.BooleanField(default=False)
     
     class Meta:
         verbose_name = 'UDS Database'
@@ -27,7 +29,7 @@ class UdsDatabase(models.Model):
         f = instance.file
         f.open()
         db = BeautifulSoup(f.read(), "xml")
-        instance.ecu, created = Ecu.objects.get_or_create(name=db.find('Function')['Name'])
+        instance.ecu, created = Ecu.objects.get_or_create(name=unidecode(db.find('Function')['Name']).upper())
         instance.supplier = db.find('AutoIdent')['Supplier']
         instance.version = db.find('AutoIdent')['Version']
 
@@ -68,6 +70,14 @@ class UdsDatabase(models.Model):
                     received_data_first_byte=received_data_first_byte,
                     received_data_bit_offset=received_data_bit_offset
                 )
+        # Reset the default database
+        if not UdsDatabase.objects.filter(ecu=instance.ecu, default=True).exists():
+            instance.default = True
+            instance.save()
+        if instance.default:
+            for db in UdsDatabase.objects.filter(ecu=instance.ecu, default=True).exclude(pk=instance.pk).all():
+                db.default = False
+                db.save()
 
 
 class UdsDatabaseObjectType(models.Model):

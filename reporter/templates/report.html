@@ -41,6 +41,9 @@
         <a href="{% get_media_prefix %}/{{report.file}}" target="_blank" class="btn btn-success">
             <i class="fa fa-cloud-download"></i>&nbsp;&nbsp;<span class="bold">Original File</span>
         </a>
+        <a href="{% url 'failure-report-deletion' id=report.pk %}" class="btn btn-danger">
+            <i class="fa fa-trash"></i>&nbsp;&nbsp;<span class="bold">Delete</span>
+        </a>
     </div>
 </div>
 
@@ -117,7 +120,34 @@
     {% endfor %}
     
     $(document).ready(function() {
-        
+    
+        // DOESN'T SUPPORT COLSPAN
+        // // Make Responsive Table
+        // $('#dtcsnaphot-details').DataTable({
+        //     paging: false,
+        //     ordering: false,
+        //     info: false,
+        //     searching: false,
+        //     responsive: true,
+        //     dom: '<"html5buttons"B>lTfgitp',
+        //     buttons: [
+        //         {extend: 'copy'},
+        //         {extend: 'csv'},
+        //         {extend: 'excel', title: 'FailureReports'},
+        //         {extend: 'pdf', title: 'FailureReports'},
+        //         {extend: 'print',
+        //             customize: function (win){
+        //                 $(win.document.body).addClass('white-bg');
+        //                 $(win.document.body).css('font-size', '10px');
+        //                 $(win.document.body).find('table')
+        //                     .addClass('compact')
+        //                     .css('font-size', 'inherit');
+        //             }
+        //         }
+        //     ]
+        // });
+    
+    
         // DTC Comparison Set Change
         $('.dtcsnapshot-summary-line').on('click', function(obj){
             // Build the list of DTC to be compared
@@ -213,7 +243,7 @@
             }
             content += '</tr></thead><tbody>';
             for(var i=0; i<status_lines.length; i++) {
-                content += '<tr class="stripped">';
+                content += '<tr class="stripped no-monospace">';
                 for(var j=0; j<status_lines[i].length; j++) {
                     content += (j==0)?'<td>':'<td style="text-align: center" colspan="'+colspan(j-1)+'">';
                     content += status_lines[i][j] + '</td>';
@@ -267,7 +297,6 @@
             });
             
         });
-        
     });
 </script>
 {% endblock extrajs %}

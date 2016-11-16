@@ -3,6 +3,7 @@ from . import views
 
 urlpatterns = [
     url(r'^$', views.index, name='index'),
+    url(r'^failure-reports/(?P<id>[0-9]+)/delete$', views.failure_report_deletion, name='failure-report-deletion'),
     url(r'^failure-reports/(?P<id>[0-9]+)$', views.failure_report, name='failure-report'),
     url(r'^failure-reports/$', views.failure_reports, name='failure-reports'),
     url(r'^vehicles/(?P<vin>[0-9A-Z?]+)$', views.vehicle, name='vehicle'),

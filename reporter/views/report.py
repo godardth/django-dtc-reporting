@@ -37,3 +37,8 @@ def failure_reports(request):
 def failure_report(request, **kwargs):
     report = VehicleSnapshot.objects.get(pk=kwargs.get('id'))
     return render(request, 'report.html', {'report': report})
+
+
+def failure_report_deletion(request, **kwargs):
+    VehicleSnapshot.objects.get(pk=kwargs.get('id')).delete()
+    return HttpResponseRedirect(reverse('failure-reports'))

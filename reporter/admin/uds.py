@@ -1,23 +1,26 @@
 from django.contrib import admin
-from reporter.models import UdsDatabase, UdsDatabaseObjectType, UdsDatabaseDefinitionEntry, UdsDatabaseValueEntry, EcuRequest
+from reporter import models
 
 
+@admin.register(models.UdsDatabase)
 class UdsDatabaseAdmin(admin.ModelAdmin):
-    pass
-admin.site.register(UdsDatabase, UdsDatabaseAdmin)
+    list_display = ('ecu', 'supplier', 'version', 'default')
+    search_fields = ['ecu', 'supplier', 'version']
 
+
+@admin.register(models.UdsDatabaseObjectType)
 class UdsDatabaseObjectTypeAdmin(admin.ModelAdmin):
     list_display = ('name',)
     search_fields = ['name']
-admin.site.register(UdsDatabaseObjectType, UdsDatabaseObjectTypeAdmin)
 
 
+@admin.register(models.UdsDatabaseDefinitionEntry)
 class UdsDatabaseDefinitionEntryAdmin(admin.ModelAdmin):
     list_display = ('database', 'type', 'value', 'text')
     search_fields = ['database', 'type', 'value', 'text']
-admin.site.register(UdsDatabaseDefinitionEntry, UdsDatabaseDefinitionEntryAdmin)
 
 
+@admin.register(models.UdsDatabaseValueEntry)
 class UdsDatabaseValueEntryAdmin(admin.ModelAdmin):
     list_display = ('pk', 'date', 'vehicle', 'ecu', 'dtc_snapshot', 'type', 'value', 'text')
     search_fields = ['pk', 'date', 'vehicle', 'ecu', 'dtc_snapshot', 'type', 'value']
@@ -36,10 +39,9 @@ class UdsDatabaseValueEntryAdmin(admin.ModelAdmin):
         return obj.dtc_snapshot.ecu_snapshot.ecu
     ecu.short_description = 'ECU'
     ecu.admin_order_field = 'dtc_snapshot__ecu_snapshot__ecu'
-admin.site.register(UdsDatabaseValueEntry, UdsDatabaseValueEntryAdmin)
 
 
+@admin.register(models.EcuRequest)
 class EcuRequestAdmin(admin.ModelAdmin):
     list_display = ('name', 'received_data_name')
     search_fields = ['name', 'received_data_name']
-admin.site.register(EcuRequest, EcuRequestAdmin)

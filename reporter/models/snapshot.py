@@ -7,6 +7,7 @@ from reporter.models import Vehicle, Ecu, EcuRequest, UdsDatabaseObjectType, Uds
 from bs4 import BeautifulSoup
 from django.utils.dateparse import parse_datetime
 from django.core.exceptions import ValidationError
+from unidecode import unidecode
 
 
 class VehicleSnapshot(models.Model):
@@ -72,7 +73,7 @@ class VehicleSnapshot(models.Model):
 class EcuSnapshot(models.Model):
     # Related objects
     vehicle_snapshot = models.ForeignKey('reporter.VehicleSnapshot', on_delete=models.CASCADE)
-    uds_database = models.ForeignKey('reporter.UdsDatabase', on_delete=models.SET_NULL, null=True, blank=True)
+    _uds_database = models.ForeignKey('reporter.UdsDatabase', on_delete=models.SET_NULL, null=True, blank=True)
     ecu = models.ForeignKey('reporter.Ecu', on_delete=models.CASCADE, null=True, blank=True)
     # Snapshot Data (ECU Level)
     software_name = models.CharField(max_length=15, null=True, blank=True)
@@ -97,7 +98,7 @@ class EcuSnapshot(models.Model):
     def parse_file(sender, instance, signal, **kwargs):
         if not instance.pk:
             soup = BeautifulSoup(instance.raw, "html5lib")
-            instance.ecu, created = Ecu.objects.get_or_create(name=soup.select('.identification th.fctname')[0].find_all('font')[0].string)
+            instance.ecu, created = Ecu.objects.get_or_create(name=unidecode(soup.select('.identification th.fctname')[0].find_all('font')[0].string).upper())
             data = soup.select('.identification > tbody > tr > td')
             instance.part_reference = data[1].string
             instance.diag_version = data[2].string
@@ -120,6 +121,16 @@ class EcuSnapshot(models.Model):
                 dtc_snapshot.raw=unicode(dtc_section) + unicode(next(dtc_snaphots_iter))
                 dtc_snapshot.save()
 
+    @property
+    def uds_database(self):
+        if not self._uds_database:
+            return self.ecu.default_database
+        return self._uds_database
+
+    @uds_database.setter
+    def uds_database(self, value):
+        self._uds_database = value
+        self.save()
     
 class DtcSnapshot(models.Model):
     # Related objects

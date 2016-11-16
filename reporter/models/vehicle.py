@@ -2,7 +2,6 @@ from __future__ import unicode_literals
 from django.db import models
 from django.core.validators import RegexValidator
 
-
 class VehicleModel(models.Model):
     brand = models.CharField(max_length=25, null=True, blank=True)
     model = models.CharField(max_length=25, null=True, blank=True)
@@ -24,7 +23,10 @@ class Vehicle(models.Model):
         pass
     
     def __unicode__(self):
-        return unicode(self.vin)
+        if self.model:
+            return unicode(self.vin) + ' - ' + unicode(self.model.model) 
+        else:
+            return unicode(self.vin)
     
     @property
     def report_count(self):
@@ -33,15 +35,3 @@ class Vehicle(models.Model):
     def save(self, *args, **kwargs):
         self.full_clean()
         super(Vehicle, self).save(*args, **kwargs)
-
-
-class Ecu(models.Model):
-    name = models.CharField(max_length=150)
-    acronym = models.CharField(max_length=15, null=True, blank=True)
-    
-    class Meta:
-        verbose_name = 'ECU'
-        verbose_name_plural = 'ECU'
-    
-    def __unicode__(self):
-        return unicode(self.name)

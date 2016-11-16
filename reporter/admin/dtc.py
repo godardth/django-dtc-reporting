@@ -1,7 +1,7 @@
 from django.contrib import admin
-from reporter.models import Dtc
+from reporter import models
 
 
+@admin.register(models.Dtc)
 class DtcAdmin(admin.ModelAdmin):
     pass
-admin.site.register(Dtc, DtcAdmin)

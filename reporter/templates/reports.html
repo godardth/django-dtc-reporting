@@ -124,13 +124,12 @@
             <div class="ibox float-e-margins">
                 <div class="ibox-content">
                     <div class="table-responsive">
-                        <table class="table table-striped">
+                        <table class="table table-striped table-responsive">
                             <thead>
                                 <tr>
-                                    <th>#</th>
-                                    <th>VIN</th>
+                                    <th>Report</th>
                                     <th>Vehicle</th>
-                                    <th>Captured on</th>
+                                    <th>Captured On</th>
                                     <th style="text-align: right">DTC Count</th>
                                 </tr>
                             </thead>
@@ -138,8 +137,7 @@
                                 {% for report in reports %}
                                 <tr class="odd gradeX">
                                     <td><a href="{% url 'failure-report' id=report.pk %}">#{{report.pk}}</a></td>
-                                    <td>{{report.vehicle.vin}}</td>
-                                    <td>{{report.vehicle.model}}</td>
+                                    <td><a href="{% url 'vehicle' vin=report.vehicle.vin %}">{{report.vehicle}}</a></td>
                                     <td>{{report.captured_on}}</td>
                                     <td align="right">{{report.dtc_count}}</td>
                                 </tr>

@@ -1,6 +1,6 @@
 from dtc import dtc, dtcs
 from ecu import ecu, ecus
-from report import failure_report, failure_reports
+from report import failure_report, failure_reports, failure_report_deletion
 from vehicle import vehicle, vehicles
 
 from django.shortcuts import render

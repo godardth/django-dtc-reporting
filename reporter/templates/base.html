@@ -16,6 +16,18 @@
         
         <!-- Manual Dependencies -->
         <link href="{% static 'inspinia/inspinia.css' %}" rel="stylesheet">
+        <link href="{% static 'dataTables/datatables.min.css' %}" rel="stylesheet">
+        
+        <!-- Google Fonts -->
+        <link href="https://fonts.googleapis.com/css?family=Roboto+Mono" rel="stylesheet">
+        <style>
+        .monospace, tbody {
+            font-family: 'Roboto Mono', monospace;
+        }
+        .no-monospace {
+            font-family: "open sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+        }
+        </style>
         
         <!-- Template Specific Stylesheets -->
         {% block extrastyle %}
@@ -97,6 +109,33 @@
         
         <!-- Manual Dependencies -->
         <script src="{% static 'inspinia/inspinia.js' %}"></script>
+        <script src="{% static 'dataTables/datatables.min.js' %}"></script>
+        
+        <!-- DataTables Initialization -->
+        <script type="text/javascript">
+        $(document).ready(function() {
+            $('table.table-responsive').DataTable({
+                pageLength: 25,
+                responsive: true,
+                dom: '<"html5buttons"B>lTfgitp',
+                buttons: [
+                    {extend: 'copy'},
+                    {extend: 'csv'},
+                    {extend: 'excel', title: 'FailureReports'},
+                    {extend: 'pdf', title: 'FailureReports'},
+                    {extend: 'print',
+                        customize: function (win){
+                            $(win.document.body).addClass('white-bg');
+                            $(win.document.body).css('font-size', '10px');
+                            $(win.document.body).find('table')
+                                .addClass('compact')
+                                .css('font-size', 'inherit');
+                        }
+                    }
+                ]
+            });
+        });
+        </script>
         
         <!-- Template Specific Javascript -->
         {% block extrajs %}

@@ -1,12 +1,13 @@
 from django.contrib import admin
-from reporter.models import VehicleSnapshot, EcuSnapshot, DtcSnapshot
+from reporter import models
 
 
+@admin.register(models.VehicleSnapshot)
 class VehicleSnapshotAdmin(admin.ModelAdmin):
     pass
-admin.site.register(VehicleSnapshot, VehicleSnapshotAdmin)
 
 
+@admin.register(models.EcuSnapshot)
 class EcuSnapshotAdmin(admin.ModelAdmin):
     list_display = ('pk', 'date', 'vehicle', 'ecu')
     search_fields = ['pk', 'date', 'vehicle', 'ecu']
@@ -20,9 +21,9 @@ class EcuSnapshotAdmin(admin.ModelAdmin):
         return obj.vehicle_snapshot.vehicle.vin
     vehicle.short_description = 'VIN'
     vehicle.admin_order_field = 'vehicle_snapshot__vehicle__vin'
-admin.site.register(EcuSnapshot, EcuSnapshotAdmin)
 
 
+@admin.register(models.DtcSnapshot)
 class DtcSnapshotAdmin(admin.ModelAdmin):
     list_display = ('pk', 'date', 'vehicle', 'ecu', '__unicode__')
     search_fields = ['pk', 'date', 'vehicle', 'ecu',]
@@ -41,4 +42,3 @@ class DtcSnapshotAdmin(admin.ModelAdmin):
         return obj.ecu_snapshot.ecu
     ecu.short_description = 'ECU'
     ecu.admin_order_field = 'ecu_snapshot__ecu'
-admin.site.register(DtcSnapshot, DtcSnapshotAdmin)
