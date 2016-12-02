@@ -3,14 +3,23 @@
 {% load integers %}
 {% load extra_dtc_data %}
 
+
 {% block extrastyle %}
 <style>
 .file-download {
     position: relative;
     top: 28px;
 }
+.ecu-dtc td {
+    border-top: none !important;
+}
+#text-no-dtc {
+    margin: 50px 0px 45px 0px;
+    color: #444;
+}
 </style>
 {% endblock extrastyle %}
+
 
 {% block content %}
 <div class="row wrapper border-bottom white-bg page-heading">
@@ -32,28 +41,28 @@
         <a href="{% get_media_prefix %}/{{report.file}}" target="_blank" class="btn btn-success">
             <i class="fa fa-cloud-download"></i>&nbsp;&nbsp;<span class="bold">Original File</span>
         </a>
+        <a href="{% url 'failure-report-deletion' id=report.pk %}" class="btn btn-danger">
+            <i class="fa fa-trash"></i>&nbsp;&nbsp;<span class="bold">Delete</span>
+        </a>
     </div>
 </div>
 
 <div class="wrapper wrapper-content animated fadeInRight">
     <div class="row">
-        <div class="col-lg-4">
-            <div class="ibox float-e-margins">
+        <div class="col-lg-3">
+            {% for ecusnap in report.ecusnapshot_set.all %}
+            <div class="ibox float-e-margins ecu-dtc">
                 <div class="ibox-title">
-                    <h5>Overview</h5>
+                    <h5>{% if ecusnap.ecu.acronym %}{{ecusnap.ecu.acronym}} - {% endif %}{{ecusnap.ecu.name}}</h5>
                 </div>
                 <div class="ibox-content">
                     <div class="table-responsive">
-                        {% for ecusnap in report.ecusnapshot_set.all %}
                         <table class="table">
-                            <thead>
-                                <tr><th colspan="3">{% if ecusnap.ecu.acronym %}{{ecusnap.ecu.acronym}} - {% endif %}{{ecusnap.ecu.name}}</th></tr>
-                            </thead>
                             <tbody class="text-uppercase">
                                 {% for dtcsnap in ecusnap.dtcsnapshot_set.all %}
                                 <tr id="dtcsnaphot-{{dtcsnap.pk}}" class="dtcsnapshot-summary-line">
                                     <td>{{dtcsnap.device_identifier.text}}</td>
-                                    <td align="right">{{dtcsnap.device_identifier.value|hexadecimal}} {{dtcsnap.failure_type.value|hexadecimal}}</td>
+                                    <td align="right">{{dtcsnap.device_identifier.value|hexadecimal}}{{dtcsnap.failure_type.value|hexadecimal}}</td>
                                     <td align="right">
                                         <input type="checkbox" id="dtcsnaphot-{{dtcsnap.pk}}-display" class="dtcsnaphot-checkbox" value="{{dtcsnap.pk}}">
                                     </td>
@@ -61,17 +70,16 @@
                                 {% endfor %}
                             </tbody>
                         </table>
-                        {% endfor %}
+                        
                     </div>
                 </div>
             </div>
+            {% endfor %}
         </div>
-        <div class="col-lg-8">
+        <div class="col-lg-9">
             <div class="ibox float-e-margins">
-                <div class="ibox-title">
-                    <h5>Details</h5>
-                </div>
                 <div class="ibox-content">
+                    <h2 id="text-no-dtc" style="text-align: center">Select a DTC to display its Freeze Frames</h2>
                     <div class="table-responsive">
                         <table class="table dtcsnapshot-details" id="dtcsnaphot-details"></table>
                     </div>
@@ -86,15 +94,60 @@
 <script>
     /*global $*/
     
+    // Build DTC Data Lines
     var snapshot_dataset = {}
     {% for ecusnap in report.ecusnapshot_set.all %}
     {% for dtcsnap in ecusnap.dtcsnapshot_set.all %}
-    snapshot_dataset[{{ dtcsnap.pk }}] = "{{ dtcsnap.snapshot_data|escapejs }}";
+    snapshot_dataset[{{ dtcsnap.pk }}] = "{{ dtcsnap.snapshot_data_db|escapejs }}";
+    {% endfor %}
+    {% endfor %}
+    
+    // Build DTC status columns
+    var snapshot_status = {}
+    {% for ecusnap in report.ecusnapshot_set.all %}
+    {% for dtcsnap in ecusnap.dtcsnapshot_set.all %}
+    snapshot_status[{{ dtcsnap.pk }}] = {
+        testFailed: {% if dtcsnap.dtc_status.testFailed == None %}'<i class="fa fa-question" aria-hidden="true"></i>'{% elif dtcsnap.dtc_status.testFailed %}'<i class="fa fa-circle" aria-hidden="true"></i>'{% else %}''{% endif %}, 
+        testFailedThisOperationCycle: {% if dtcsnap.dtc_status.testFailedThisOperationCycle == None %}'<i class="fa fa-question" aria-hidden="true"></i>'{% elif dtcsnap.dtc_status.testFailedThisOperationCycle %}'<i class="fa fa-circle" aria-hidden="true"></i>'{% else %}''{% endif %},
+        pendingDTC: {% if dtcsnap.dtc_status.pendingDTC == None %}'<i class="fa fa-question" aria-hidden="true"></i>'{% elif dtcsnap.dtc_status.pendingDTC %}'<i class="fa fa-circle" aria-hidden="true"></i>'{% else %}''{% endif %},
+        confirmedDTC: {% if dtcsnap.dtc_status.confirmedDTC == None %}'<i class="fa fa-question" aria-hidden="true"></i>'{% elif dtcsnap.dtc_status.confirmedDTC %}'<i class="fa fa-circle" aria-hidden="true"></i>'{% else %}''{% endif %},
+        testNotCompletedSinceLastClear: {% if dtcsnap.dtc_status.testNotCompletedSinceLastClear == None %}'<i class="fa fa-question" aria-hidden="true"></i>'{% elif dtcsnap.dtc_status.testNotCompletedSinceLastClear %}'<i class="fa fa-circle" aria-hidden="true"></i>'{% else %}''{% endif %},
+        testFailedSinceLastClear: {% if dtcsnap.dtc_status.testFailedSinceLastClear == None %}'<i class="fa fa-question" aria-hidden="true"></i>'{% elif dtcsnap.dtc_status.testFailedSinceLastClear %}'<i class="fa fa-circle" aria-hidden="true"></i>'{% else %}''{% endif %},
+        testNotCompletedThisOperationCycle: {% if dtcsnap.dtc_status.testNotCompletedThisOperationCycle == None %}'<i class="fa fa-question" aria-hidden="true"></i>'{% elif dtcsnap.dtc_status.testNotCompletedThisOperationCycle %}'<i class="fa fa-circle" aria-hidden="true"></i>'{% else %}''{% endif %},
+        warningIndicatorRequested: {% if dtcsnap.dtc_status.warningIndicatorRequested == None %}'<i class="fa fa-question" aria-hidden="true"></i>'{% elif dtcsnap.dtc_status.warningIndicatorRequested %}'<i class="fa fa-circle" aria-hidden="true"></i>'{% else %}''{% endif %},
+    }
     {% endfor %}
     {% endfor %}
     
     $(document).ready(function() {
-        
+    
+        // DOESN'T SUPPORT COLSPAN
+        // // Make Responsive Table
+        // $('#dtcsnaphot-details').DataTable({
+        //     paging: false,
+        //     ordering: false,
+        //     info: false,
+        //     searching: false,
+        //     responsive: true,
+        //     dom: '<"html5buttons"B>lTfgitp',
+        //     buttons: [
+        //         {extend: 'copy'},
+        //         {extend: 'csv'},
+        //         {extend: 'excel', title: 'FailureReports'},
+        //         {extend: 'pdf', title: 'FailureReports'},
+        //         {extend: 'print',
+        //             customize: function (win){
+        //                 $(win.document.body).addClass('white-bg');
+        //                 $(win.document.body).css('font-size', '10px');
+        //                 $(win.document.body).find('table')
+        //                     .addClass('compact')
+        //                     .css('font-size', 'inherit');
+        //             }
+        //         }
+        //     ]
+        // });
+    
+    
         // DTC Comparison Set Change
         $('.dtcsnapshot-summary-line').on('click', function(obj){
             // Build the list of DTC to be compared
@@ -103,19 +156,55 @@
                 if( $(this).is(':checked') ){
                     var dtc = {
                         pk: $(this).val(),
-                        name: $(this).parent().prev().prev().html()
+                        name: ($(this).parent().prev().prev().html()=='N/A')?'DTC '+$(this).parent().prev().html():$(this).parent().prev().prev().html()
                     }
                     dtcsnaps.push(dtc);
                 }
             });
+            if(dtcsnaps.length == 0) {
+                $('#text-no-dtc').css('display', 'block');
+                $('#dtcsnaphot-details').css('display', 'none');
+            } else {
+                $('#text-no-dtc').css('display', 'none');
+                $('#dtcsnaphot-details').css('display', 'table');
+            }
             // Build Data Lines
             var data_names = [];
             for(var i=0; i<dtcsnaps.length; i++) {
                 snap = $.parseJSON(snapshot_dataset[dtcsnaps[i].pk]);
-                for(var i=0; i<snap.data.length; i++) {
-                    if(data_names.indexOf(snap.data[i].text) < 0) {
-                        data_names.push(snap.data[i].text)
+                for(var i=0; i<snap[1].length; i++) {
+                    if(data_names.indexOf(snap[1][i].request_db) < 0) {
+                        data_names.push(snap[1][i].request_db)
                     }
+                }
+            }
+            // Build Table Status
+            var status_lines = [
+                ['Test failed'],
+                ['Test failed this operation cycle'],
+                ['Pending DTC'],
+                ['Confirmed DTC'],
+                ['Test not completed since last clear'],
+                ['Test failed since last clear'],
+                ['Test not completed this operation cycle'],
+                ['Warning indicator requested']
+            ];
+            for(var i=0; i<8; i++) {
+                for(var j=0; j<dtcsnaps.length; j++) {
+                    var get_data_name = function(i) {
+                        switch(i) {
+                            case 0: return 'testFailed';
+                            case 1: return 'testFailedThisOperationCycle';
+                            case 2: return 'pendingDTC';
+                            case 3: return 'confirmedDTC';
+                            case 4: return 'testNotCompletedSinceLastClear';
+                            case 5: return 'testFailedSinceLastClear';
+                            case 6: return 'testNotCompletedThisOperationCycle';
+                            case 7: return 'warningIndicatorRequested';
+                            default: return ''; 
+                        }
+                    };
+                    status_lines[i].push(snapshot_status[dtcsnaps[j].pk][get_data_name(i)]);
                 }
             }
             // Build Table Data
@@ -123,39 +212,91 @@
             for(var i=0; i<data_names.length; i++) {
                 var cells = [data_names[i]];
                 for(var j=0; j<dtcsnaps.length; j++) {
-                    var found = false;
                     snap = $.parseJSON(snapshot_dataset[dtcsnaps[j].pk]);
-                    for(var k=0; k<snap.data.length; k++) {
-                        if(snap.data[k].text == data_names[i]) {
-                            found = true;
-                            cells.push(snap.data[k].value);
+                    $.each(snap, function(k, data) {
+                        var found = false;
+                        for(var l=0; l<data.length; l++) {
+                            if(data[l].request_db == data_names[i]) {
+                                found = true;
+                                cells.push(data[l].value_db);
+                            }
                         }
-                    }
-                    if(!found) {
-                        cells.push('N/A');
-                    }
+                        if(!found) {
+                            cells.push('-');
+                        }
+                    });
                 }
                 lines.push(cells);
             }
             // Redraw table content
-            content = '<thead><tr><th>Parameters</th>';
+            var colspan = function(i) {
+                parsed = $.parseJSON(snapshot_dataset[dtcsnaps[i].pk]);
+                return Object.keys(parsed).length
+            };
+            var record_number = function(i, j) {
+                parsed = $.parseJSON(snapshot_dataset[dtcsnaps[i].pk]);
+                return Object.keys(parsed)[j];
+            };
+            content = '<thead><tr><th colspan="1">DTC STATUS</th>';
             for(var i=0; i<dtcsnaps.length; i++) {
-                content += '<th style="text-align: right">' + dtcsnaps[i].name + '</th>';
+                content += '<th class="text-uppercase" style="text-align: center" colspan="'+colspan(i)+'">' + dtcsnaps[i].name + '</th>';
             }
             content += '</tr></thead><tbody>';
+            for(var i=0; i<status_lines.length; i++) {
+                content += '<tr class="stripped no-monospace">';
+                for(var j=0; j<status_lines[i].length; j++) {
+                    content += (j==0)?'<td>':'<td style="text-align: center" colspan="'+colspan(j-1)+'">';
+                    content += status_lines[i][j] + '</td>';
+                }
+                content += '</tr>';
+            }
+            content += '</tr><tr class="strip-masked"><th>DATA READ</th>';
+            for(var i=0; i<dtcsnaps.length; i++) {
+                for(var j=0; j<colspan(i); j++) {
+                    content += '<th class="text-uppercase" style="text-align: center">Record ' + record_number(i, j) + '</th>';
+                }
+            }
+            content += '</tr>';
             for(var i=0; i<lines.length; i++) {
-                content += '<tr>';
+                content += '<tr class="strip-masked">';
                 for(var j=0; j<lines[i].length; j++) {
-                    content += (j==0)?'<td>':'<td style="text-align: right">';
+                    content += (j==0)?'<td>':'<td style="text-align: center">';
                     content += lines[i][j] + '</td>';
                 }
                 content += '</tr>';
             }
             content += '</tbody>';
             $('#dtcsnaphot-details').html(content);
-
+            // Style the table (stripping)
+            var strip_mask = [];
+            var current_strip = false;
+            $.each($('#dtcsnaphot-details thead > tr:nth-of-type(1) > th'), function(k, obj) {
+                for(i=0; i<$(obj).attr('colspan'); i++) {
+                    strip_mask.push(current_strip);
+                }
+                if(current_strip){
+                    $(obj).css('background-color', '#F9F9F9');
+                }
+                current_strip = !current_strip;
+            });
+            $.each($('#dtcsnaphot-details tbody tr.stripped'), function(k, row) {
+                current_strip = false;
+                $.each($(row).children('th, td'), function(l, cell) {
+                    if(current_strip){
+                        $(cell).css('background-color', '#F9F9F9');
+                    }
+                    current_strip = !current_strip;
+                });
+            });
+            $.each($('#dtcsnaphot-details tbody tr.strip-masked'), function(k, row) {
+                $.each($(row).children('th, td'), function(l, cell) {
+                    if (strip_mask[l]) {
+                        $(cell).css('background-color', '#F9F9F9');
+                    }
+                });
+            });
+            
         });
-        
     });
 </script>
 {% endblock extrajs %}

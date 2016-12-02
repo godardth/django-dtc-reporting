@@ -23,20 +23,26 @@
             <div class="ibox float-e-margins">
                 <div class="ibox-content">
                     <div class="table-responsive">
-                        <table class="table table-striped">
+                        <table class="table table-striped table-responsive">
                             <thead>
                                 <tr>
-                                    <th>ID (hex)</th>
+                                    <th>Diagnostic Trouble Code</th>
+                                    <th>ECU</th>
                                     <th>Device Id</th>
                                     <th>Failure Type</th>
+                                    <th>Vehicles</th>
+                                    <th>Failure Reports</th>
                                 </tr>
                             </thead>
                             <tbody class="text-uppercase">
                                 {% for dtc in dtcs %}
                                 <tr>
-                                    <td>{{dtc.device_identifier.value|hexadecimal}}{{dtc.failure_type.value|hexadecimal}}</td>
-                                    <td>{{dtc.device_identifier.value|hexadecimal}}</td>
-                                    <td>{{dtc.failure_type.value|hexadecimal}}</td>
+                                    <td><a href="{% url 'dtc' id=dtc.pk %}">{{dtc.device_identifier|hexadecimal}}{{dtc.failure_type|hexadecimal}}</a></td>
+                                    <td>{{dtc.ecu}}</td>
+                                    <td>{{dtc.device_identifier|hexadecimal}}</td>
+                                    <td>{{dtc.failure_type|hexadecimal}}</td>
+                                    <td>{{dtc.vehicle_count}}</td>
+                                    <td>{{dtc.failure_report_count}}</td>
                                 </tr>
                                 {% endfor %}
                             </tbody>

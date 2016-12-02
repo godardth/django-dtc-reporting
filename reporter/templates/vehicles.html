@@ -22,12 +22,12 @@
             <div class="ibox float-e-margins">
                 <div class="ibox-content">
                     <div class="table-responsive">
-                        <table class="table table-striped">
+                        <table class="table table-striped table-responsive">
                             <thead>
                                 <tr>
                                     <th>VIN</th>
                                     <th>Vehicle</th>
-                                    <th>Report Count</th>
+                                    <th style="text-align: right">Report Count</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -35,7 +35,7 @@
                                 <tr>
                                     <td><a href="{% url 'vehicle' vin=vehicle.vin %}">{{vehicle.vin}}</a></td>
                                     <td>{{vehicle.model}}</td>
-                                    <td>{{vehicle.report_count}}</td>
+                                    <td align="right">{{vehicle.report_count}}</td>
                                 </tr>
                                 {% endfor %}
                             </tbody>

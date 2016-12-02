@@ -14,8 +14,8 @@ class TrwFailsafeMatrix(models.Model):
     class Meta:
         verbose_name = 'TRW Failsafe Matrix'
         verbose_name_plural = 'TRW Failsafe Matrices'
-    def __str__(self):
-        return str(self.file)
+    def __unicode__(self):
+        return unicode(self.file)
     
     @receiver(pre_save, sender='reporter.TrwFailsafeMatrix')
     def parse_file(sender, instance, signal, **kwargs):

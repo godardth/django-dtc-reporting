@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% load integers %}
+ 
+{% block content %}
+<div class="row wrapper border-bottom white-bg page-heading">
+    <div class="col-lg-10">
+        <h2>{{dtc.name}}</h2>
+        <ol class="breadcrumb">
+            <li>
+                <a href="index.html">Home</a>
+            </li>
+            <li>
+                <a href="{% url 'dtcs' %}">Diagnostic Trouble Codes</a>
+            </li>
+            <li class="active">
+                <strong>{{dtc.name}}</strong>
+            </li>
+        </ol>
+    </div>
+    <div class="col-lg-2"></div>
+</div>
+
+<div class="wrapper wrapper-content animated fadeInRight">
+    <div class="row">
+        <div class="col-lg-6">
+            <div class="ibox float-e-margins">
+                <div class="ibox-content">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Vehicles</th>
+                                </tr>
+                            </thead>
+                            <tbody class="text-uppercase">
+                                {% for vehicle in vehicles %}
+                                <tr>
+                                    <td><a href="{% url 'vehicle' vin=vehicle.vin %}">{{vehicle.vin}}</a></td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="ibox float-e-margins">
+                <div class="ibox-content">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Failure Reports</th>
+                                    <th>Vehicle</th>
+                                    <th>Date</th>
+                                </tr>
+                            </thead>
+                            <tbody class="text-uppercase">
+                                {% for report in failure_reports %}
+                                <tr>
+                                    <td><a href="{% url 'failure-report' id=report.pk %}">#{{report.pk}}</a></td>
+                                    <td>{{report.vehicle.vin}}</td>
+                                    <td>{{report.created_on}}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}

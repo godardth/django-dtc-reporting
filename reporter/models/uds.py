@@ -7,6 +7,7 @@ from django.dispatch import receiver
 from bs4 import BeautifulSoup
 from django.utils.dateparse import parse_datetime
 from reporter.models import Ecu
+from unidecode import unidecode
 
 
 class UdsDatabase(models.Model):
@@ -14,29 +15,30 @@ class UdsDatabase(models.Model):
     ecu = models.ForeignKey('reporter.Ecu', on_delete=models.CASCADE, editable=False)
     version = models.CharField(max_length=255, editable=False)
     supplier = models.CharField(max_length=255, editable=False)
+    default = models.BooleanField(default=False)
     
     class Meta:
         verbose_name = 'UDS Database'
         unique_together = ("ecu", "version")
     
-    def __str__(self):
-        return str(self.ecu) + ' - ' + str(self.version)
+    def __unicode__(self):
+        return unicode(self.ecu) + ' - ' + unicode(self.version)
     
     @receiver(pre_save, sender='reporter.UdsDatabase')
     def parse_file(sender, instance, signal, **kwargs):
         f = instance.file
         f.open()
-        db = BeautifulSoup(f.read().encode('utf-8','ignore'), "xml")
-        instance.ecu, created = Ecu.objects.get_or_create(name=db.find('Function')['Name'])
+        db = BeautifulSoup(f.read(), "xml")
+        instance.ecu, created = Ecu.objects.get_or_create(name=unidecode(db.find('Function')['Name']).upper())
         instance.supplier = db.find('AutoIdent')['Supplier']
         instance.version = db.find('AutoIdent')['Version']
 
     @receiver(post_save, sender='reporter.UdsDatabase')
-    def create_ecu_snapshot(sender, instance, created, signal, **kwargs):    
+    def import_data(sender, instance, created, signal, **kwargs):    
         if created:
             f = instance.file
             f.open()
-            db = BeautifulSoup(f.read().encode('utf-8','ignore'), "xml")
+            db = BeautifulSoup(f.read(), "xml")
             # Data
             for db_item in db.find_all('Item'):
                 # Type
@@ -68,21 +70,29 @@ class UdsDatabase(models.Model):
                     received_data_first_byte=received_data_first_byte,
                     received_data_bit_offset=received_data_bit_offset
                 )
+        # Reset the default database
+        if not UdsDatabase.objects.filter(ecu=instance.ecu, default=True).exists():
+            instance.default = True
+            instance.save()
+        if instance.default:
+            for db in UdsDatabase.objects.filter(ecu=instance.ecu, default=True).exclude(pk=instance.pk).all():
+                db.default = False
+                db.save()
 
 
 class UdsDatabaseObjectType(models.Model):
     name = models.CharField(max_length=255)
     
     class Meta:
-        verbose_name = 'UDS Database Entry Type'
+        verbose_name = 'UDS Database Object Type'
     
-    def __str__(self):
-        return str(self.name)
+    def __unicode__(self):
+        return unicode(self.name)
 
 
 class UdsDatabaseDefinitionEntry(models.Model):
-    database = models.ForeignKey('reporter.UdsDatabase', on_delete=models.PROTECT, blank=True, null=True)
-    type = models.ForeignKey('reporter.UdsDatabaseObjectType', on_delete=models.PROTECT)
+    database = models.ForeignKey('reporter.UdsDatabase', on_delete=models.CASCADE, blank=True, null=True)
+    type = models.ForeignKey('reporter.UdsDatabaseObjectType', on_delete=models.CASCADE)
     value = models.FloatField()
     text = models.CharField(max_length=255)
     
@@ -92,14 +102,17 @@ class UdsDatabaseDefinitionEntry(models.Model):
 
 
 class UdsDatabaseValueEntry(models.Model):
-    parent = models.ForeignKey('reporter.DtcSnapshot', on_delete=models.CASCADE)
+    dtc_snapshot = models.ForeignKey('reporter.DtcSnapshot', on_delete=models.CASCADE)
     type = models.ForeignKey('reporter.UdsDatabaseObjectType', on_delete=models.PROTECT)
     value = models.FloatField(null=True, blank=True)
     
     class Meta:
         verbose_name = 'UDS Database Value Entry'
         verbose_name_plural = 'UDS Database Value Entries'
-        
+    
+    def __unicode__(self):
+        return unicode(self.type)
+    
     @property
     def text(self):
         try:
@@ -121,6 +134,6 @@ class EcuRequest(models.Model):
     class Meta:
         verbose_name = 'ECU Request'
     
-    def __str__(self):
-        return str(self.database.ecu) + ' - ' + str(self.name)
+    def __unicode__(self):
+        return unicode(self.name)
     

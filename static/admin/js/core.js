@@ -189,7 +189,7 @@ function findPosY(obj) {
             w: '0' + this.getDay(),
             x: this.toLocaleDateString(),
             X: this.toLocaleTimeString(),
-            y: ('' + this.getFullYear()).substr(2, 4),
+            y: ('' + this.getFullYear()).subunicode(2, 4),
             Y: '' + this.getFullYear(),
             '%': '%'
         };
