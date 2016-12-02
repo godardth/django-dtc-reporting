@@ -21,7 +21,7 @@ from django.conf.urls.static import static
 admin.site.site_header = 'DTC Reporting'
 
 urlpatterns = [
-    url(r'^search/', include('haystack.urls')),
+    # url(r'^search/', include('haystack.urls')),
     url(r'^admin/', admin.site.urls),
     url(r'^', include('reporter.urls')),
 ]

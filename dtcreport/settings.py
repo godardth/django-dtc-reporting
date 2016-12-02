@@ -20,7 +20,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/1.9/howto/deployment/checklist/
 SECRET_KEY = 'ea1(mg8pkk4w^^nhk5p42gk*6r993kjb1@cho3*a+v_x1@oq^e'
 DEBUG = True
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['.c9users.io',]
 
 # Application definition
 INSTALLED_APPS = [
@@ -32,7 +32,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'reporter',
     'bootstrap3',
-    'haystack',
+    # 'haystack',
     'djangobower'
 ]
 MIDDLEWARE_CLASSES = [
