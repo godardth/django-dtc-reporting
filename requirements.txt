@@ -1,4 +1,5 @@
 Django==1.9.12
+Unidecode==0.04.19
 argparse==1.2.1
 beautifulsoup4==4.5.1
 bs4==0.0.1
